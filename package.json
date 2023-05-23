@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "local": "vite --host 0.0.0.0"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.7",
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.0-alpha3",
     "vue": "^3.2.47"
   },
   "devDependencies": {

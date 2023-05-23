@@ -1,30 +1,61 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import Timer from './components/Timer.vue'
+import { ITimer } from './types/ITimer'
+
+interface ITimers {
+  one: ITimer,
+  two?: ITimer
+}
+
+let oTimers: ITimers[] = []
+
+oTimers.push({
+  one: {
+    title: "First Title",
+    active: true,
+    hour: 0,
+    minute: 0,
+    second: 10
+  },
+  two: {
+    title: "Second Title",
+    active: true,
+    hour: 1,
+    minute: 2,
+    second: 3
+  },
+})
+
+oTimers.push({
+  one: {
+    title: "Third Title",
+    active: true,
+    hour: 10,
+    minute: 20,
+    second: 30
+  }
+})
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <main>
+    <div class="px-4 py-5 my-5 text-center">
+      <img class="d-block mx-auto mb-4" src="/logo.svg" width="72" height="74">
+      <h1 class="display-5 fw-bold text-body-emphasis">@domix24</h1>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">List of <em>Timers</em></p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+          <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Add new</button>
+        </div>
+      </div>
+    </div>
+    <div v-for="value in oTimers">
+      <div class="px-4 py-4 my-5">
+        <div class="row">
+          <div class="col-6"><Timer :object="value.one" /></div>
+          <div class="col-6" v-if="value.two"><Timer :object="value.two" /></div>
+        </div>
+      </div>    
+    </div>
+  </main>
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
