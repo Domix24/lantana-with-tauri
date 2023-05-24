@@ -100,6 +100,16 @@ const cardBorder = computed(() => {
         return "card border-danger"
     }
 })
+
+const appendDisabled = computed(() => {
+    if (!littleTest.object.active) return "disabled"
+    else return ""
+})
+
+const showStartButton = computed(() => {
+    if (countdown.elapsed === 0) return false
+    else return !countdown.active
+})
 </script>
 
 <template>
@@ -109,9 +119,9 @@ const cardBorder = computed(() => {
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
             <p class="card-text">{{show(countdown.elapsed)}}</p>
             <div class="d-grid gap-2 d-md-flex">
-                <a class="btn btn-success" v-on:click="startTimer" v-if="!countdown.active">Start</a>
-                <a class="btn btn-danger" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
-                <a class="btn btn-primary" v-on:click="resetTimer" v-if="!countdown.active">Reset</a>
+                <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
+                <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
+                <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimer" v-if="!countdown.active">Reset</a>
             </div>
         </div>
         <div class="card-footer text-body-secondary">Something</div>

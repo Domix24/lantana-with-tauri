@@ -11,6 +11,8 @@ oTimers.push(createTimer(timerIndex++, 10, 20, 30, "Third Title", true))
 
 let oReactivity = [ref(0), ref(0), ref(0)]
 
+let isFocused: boolean = true
+
 const toggleTimers: (active: boolean, timer: ITimer) => void = (active, timer) => {
   oTimers.filter(x => x.id != timer.id).forEach(x => {
     x.active = active
@@ -25,21 +27,31 @@ const handleTimerStarted = (timer: ITimer) => {
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   if (finished) {
-    let elapsed = 30
+    let elapsed = 0
     let interval = setInterval(() => {
-      if (elapsed === 0) {
+      if (isFocused) {
         document.title = "Timer App"
         clearInterval(interval)
       } else if (elapsed % 2 === 0)
         document.title = "**** TIMER ENDED ****"
       else if (elapsed % 2 === 1)
         document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
-      elapsed--
-    }, 500)
+
+      elapsed = (elapsed + 1) % 2
+    }, 1000)
   } else {
     toggleTimers(true, timer)
   }
 }
+
+window.addEventListener("focus", function() {
+  isFocused = true
+})
+
+window.addEventListener("blur", function() {
+  isFocused = false
+})
+
 </script>
 
 <template>
