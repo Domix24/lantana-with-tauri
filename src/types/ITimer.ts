@@ -3,5 +3,6 @@ export interface ITimer {
   minute: number,
   hour: number,
   second: number,
-  title: string
+  title: string,
+  id: number
 }

@@ -1,40 +1,63 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import Timer from './components/Timer.vue'
 import { ITimer } from './types/ITimer'
 
-interface ITimers {
-  one: ITimer,
-  two?: ITimer
+let oTimers: ITimer[] = []
+oTimers.push({
+  title: "First Title",
+  active: true,
+  hour: 0,
+  minute: 0,
+  second: 10,
+  id: 0
+})
+oTimers.push({
+  title: "Second Title",
+  active: true,
+  hour: 1,
+  minute: 2,
+  second: 3,
+  id: 1
+})
+oTimers.push({
+  title: "Third Title",
+  active: true,
+  hour: 10,
+  minute: 20,
+  second: 30,
+  id: 2
+})
+
+const theTimers = computed(() => {
+  let xTimers: ITimer[][] = []
+  oTimers.map((value, index) => {
+    if (index % 2 - 1) xTimers.push([value])
+    else xTimers[Math.floor(index / 2)].push(value)
+  })
+  return xTimers
+})
+
+const handleTimerStarted = (timer: ITimer) => {
+  console.log("timer-started", timer)
 }
 
-let oTimers: ITimers[] = []
-
-oTimers.push({
-  one: {
-    title: "First Title",
-    active: true,
-    hour: 0,
-    minute: 0,
-    second: 10
-  },
-  two: {
-    title: "Second Title",
-    active: true,
-    hour: 1,
-    minute: 2,
-    second: 3
-  },
-})
-
-oTimers.push({
-  one: {
-    title: "Third Title",
-    active: true,
-    hour: 10,
-    minute: 20,
-    second: 30
+const handleTimerStopped = (timer: ITimer, finished: boolean) => {
+  if (finished) {
+    let elapsed = 30
+    let interval = setInterval(() => {
+      if (elapsed === 0) {
+        document.title = "Timer App"
+        clearInterval(interval)
+      } else if (elapsed % 2 === 0)
+        document.title = "**** TIMER ENDED ****"
+      else if (elapsed % 2 === 1)
+        document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
+      elapsed--
+    }, 500)
   }
-})
+  console.log("timer-stopped", timer, finished)
+}
 </script>
 
 <template>
@@ -49,13 +72,12 @@ oTimers.push({
         </div>
       </div>
     </div>
-    <div v-for="value in oTimers">
-      <div class="px-4 py-4 my-5">
-        <div class="row">
-          <div class="col-6"><Timer :object="value.one" /></div>
-          <div class="col-6" v-if="value.two"><Timer :object="value.two" /></div>
+    <div class="px-4 py-4 my-5" v-for="values in theTimers">
+      <div class="row">
+        <div class="col-6" v-for="timer in values">
+          <Timer :object="timer" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
         </div>
-      </div>    
+      </div>
     </div>
   </main>
 </template>

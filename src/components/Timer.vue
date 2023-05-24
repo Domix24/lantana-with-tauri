@@ -2,16 +2,19 @@
 import { reactive } from 'vue';
 import { ITimer } from '../types/ITimer';
 
-export interface ICountdown {
-    hour: number,
-    minute: number,
-    second: number,
+interface IDisplay {
+    hours: number,
+    minutes: number,
+    seconds: number
+}
+
+interface ICountdown {
     elapsed: number,
     active: boolean
 }
 
 interface IUpdateFunction {
-    (newTime: number, timer: ITimer): void
+    (newTime: number, display: IDisplay): void
 }
 
 interface IScheduled {
@@ -31,39 +34,42 @@ const littleTest = withDefaults(defineProps<{ object?: ITimer }>(), {
         second: 0
     })
 })
+const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void}>()
 
 const countdown: ICountdown = reactive({
     active: false,
-    hour: littleTest.object.hour,
-    minute: littleTest.object.minute,
-    second: littleTest.object.second,
     elapsed: littleTest.object.hour * 3600 + littleTest.object.minute * 60 + littleTest.object.second
 })
 
 const scheduled: IScheduled = reactive({
     start: new Date(),
     end: new Date(),
-    update: function(newTime, timer) {
-        this.start.setTime(newTime)
+    update: function(newTime, display) {
         this.end.setTime(newTime)
 
-        this.end.setHours(this.end.getHours() + timer.hour)
-        this.end.setMinutes(this.end.getMinutes() + timer.minute)
-        this.end.setSeconds(this.end.getSeconds() + timer.second)
+        this.end.setHours(this.end.getHours() + display.hours)
+        this.end.setMinutes(this.end.getMinutes() + display.minutes)
+        this.end.setSeconds(this.end.getSeconds() + display.seconds)
+
+        this.start = new Date(newTime)
     }
 })
 
-const pad = (x: number) => String(x).padStart(2, '0')
-const show = (x: number) => pad(Math.floor(x / 3600)) + ":" + pad(Math.floor((x - Math.floor(x / 3600) * 3600) / 60)) + ":" + pad((x - Math.floor(x / 60) * 60))
-const format = (x: Date) => x.toLocaleTimeString([], { timeStyle: 'medium' })
+const pad: (x: number) => string = (x: number) => String(x).padStart(2, '0')
+const show: (x: number) => string = (x: number) => pad(Math.floor(x / 3600)) + ":" + pad(Math.floor((x - Math.floor(x / 3600) * 3600) / 60)) + ":" + pad((x - Math.floor(x / 60) * 60))
+const format: (x: Date) => string = (x: Date) => x.toLocaleTimeString([], { timeStyle: 'medium' })
+const coutdowntotimer: (x: number) => IDisplay = (x) => ({ hours: Math.floor(x / 3600), minutes: Math.floor((x - Math.floor(x / 3600) * 3600) / 60), seconds: (x - Math.floor(x / 60) * 60) })
+
+const originDisplay : IDisplay = coutdowntotimer(countdown.elapsed)
+const originElapsed : number = countdown.elapsed
 
 const startTimer = function () {
     const baseDate = Date.now()
-    const nbSeconds = littleTest.object.hour * 3600 + littleTest.object.minute * 60 + littleTest.object.second
+    const nbSeconds = countdown.elapsed
 
     countdown.active = true
-
-    scheduled.update(baseDate, littleTest.object)
+    scheduled.update(baseDate, coutdowntotimer(nbSeconds))
+    emits('timerStarted', littleTest.object)
 
     timerHandle = setInterval(function () {
         let delta = Math.floor((Date.now() - baseDate) / 1000)
@@ -71,21 +77,26 @@ const startTimer = function () {
 
         countdown.elapsed = elapsed < 0 ? 0 : elapsed
 
-        if (!countdown.elapsed) clearInterval(timerHandle)
+        if (!countdown.elapsed) finishTimer()
     }, 225)
+}
+
+const finishTimer = function () {
+    clearInterval(timerHandle)
+    countdown.active = false
+    emits('timerStopped', littleTest.object, true)    
 }
 
 const stopTimer = function () {
     clearInterval(timerHandle)
     countdown.active = false
+    emits('timerStopped', littleTest.object, false)
 }
 
 const resetTimer = function () {
     const baseDate = Date.now()
-
-    countdown.elapsed = littleTest.object.hour * 3600 + littleTest.object.minute * 60 + littleTest.object.second
-
-    scheduled.update(baseDate, littleTest.object)
+    countdown.elapsed = originElapsed
+    scheduled.update(baseDate, originDisplay)
 }
 </script>
 
