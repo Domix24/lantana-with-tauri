@@ -1,45 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref } from 'vue';
 import Timer from './components/Timer.vue'
-import { ITimer } from './types/ITimer'
+import { ITimer, createTimer } from './types/ITimer'
 
+let timerIndex: number = 0
 let oTimers: ITimer[] = []
-oTimers.push({
-  title: "First Title",
-  active: true,
-  hour: 0,
-  minute: 0,
-  second: 10,
-  id: 0
-})
-oTimers.push({
-  title: "Second Title",
-  active: true,
-  hour: 1,
-  minute: 2,
-  second: 3,
-  id: 1
-})
-oTimers.push({
-  title: "Third Title",
-  active: true,
-  hour: 10,
-  minute: 20,
-  second: 30,
-  id: 2
-})
+oTimers.push(createTimer(timerIndex++, 0, 0, 10, "First Title", true))
+oTimers.push(createTimer(timerIndex++, 1, 2, 3, "Second Title", true))
+oTimers.push(createTimer(timerIndex++, 10, 20, 30, "Third Title", true))
 
-const theTimers = computed(() => {
-  let xTimers: ITimer[][] = []
-  oTimers.map((value, index) => {
-    if (index % 2 - 1) xTimers.push([value])
-    else xTimers[Math.floor(index / 2)].push(value)
+let oReactivity = [ref(0), ref(0), ref(0)]
+
+const toggleTimers: (active: boolean, timer: ITimer) => void = (active, timer) => {
+  oTimers.filter(x => x.id != timer.id).forEach(x => {
+    x.active = active
+    oReactivity[x.id].value = oReactivity[x.id].value + 1 % 2
   })
-  return xTimers
-})
+}
 
 const handleTimerStarted = (timer: ITimer) => {
-  console.log("timer-started", timer)
+  timer.active = true
+  toggleTimers(false, timer)
 }
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
@@ -55,8 +36,9 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
         document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
       elapsed--
     }, 500)
+  } else {
+    toggleTimers(true, timer)
   }
-  console.log("timer-stopped", timer, finished)
 }
 </script>
 
@@ -72,10 +54,10 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
         </div>
       </div>
     </div>
-    <div class="px-4 py-4 my-5" v-for="values in theTimers">
-      <div class="row">
-        <div class="col-6" v-for="timer in values">
-          <Timer :object="timer" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
+    <div class="px-4 py-4 my-5">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" v-for="(timer, index) in oTimers">
+          <Timer :object="timer" :key="oReactivity[index].value" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
         </div>
       </div>
     </div>

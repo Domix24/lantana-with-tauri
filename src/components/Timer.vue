@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
-import { ITimer } from '../types/ITimer';
+import { computed, reactive } from 'vue';
+import { ITimer, createEmptyTimer } from '../types/ITimer';
 
 interface IDisplay {
     hours: number,
@@ -26,13 +26,7 @@ interface IScheduled {
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
 const littleTest = withDefaults(defineProps<{ object?: ITimer }>(), {
-    object: () => <ITimer>({
-        title: "Title",
-        active: false,
-        hour: 0,
-        minute: 0,
-        second: 0
-    })
+    object: () => createEmptyTimer()
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void}>()
 
@@ -98,10 +92,18 @@ const resetTimer = function () {
     countdown.elapsed = originElapsed
     scheduled.update(baseDate, originDisplay)
 }
+
+const cardBorder = computed(() => {
+    if (littleTest.object.active) {
+        return "card border-success"
+    } else {
+        return "card border-danger"
+    }
+})
 </script>
 
 <template>
-    <div class="card">
+    <div :class="cardBorder">
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
