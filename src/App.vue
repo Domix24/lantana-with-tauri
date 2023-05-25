@@ -12,9 +12,9 @@ let oIndexes: number[] = []
 
 //====================
 
-const pushTo: (timer: ITimer, index: number) => void = (timer, index) => {
+const pushTo: (timer: ITimer) => void = timer => {
   oTimers.push(timer)
-  oIndexes.push(index)
+  oIndexes.push(timer.id)
 }
 
 const toggleTimers: (active: boolean, timer: ITimer) => void = (active, timer) => {
@@ -57,9 +57,9 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 
 //====================
 
-pushTo(createTimer(0, 0, 0, 10, "First Title", true), 0)
-pushTo(createTimer(1, 1, 2, 3, "Second Title", true), 1)
-pushTo(createTimer(2, 10, 20, 30, "Third Title", true), 2)
+pushTo(createTimer(0, 0, 0, 10, "First Title", true))
+pushTo(createTimer(1, 1, 2, 3, "Second Title", true))
+pushTo(createTimer(2, 10, 20, 30, "Third Title", true))
 
 //====================
 
