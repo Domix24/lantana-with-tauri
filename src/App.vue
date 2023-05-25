@@ -1,41 +1,52 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
 import Timer from './components/Timer.vue'
 import { ITimer, createTimer } from './types/ITimer'
 
-let timerIndex: number = 0
-let oTimers: ITimer[] = []
-oTimers.push(createTimer(timerIndex++, 0, 0, 10, "First Title", true))
-oTimers.push(createTimer(timerIndex++, 1, 2, 3, "Second Title", true))
-oTimers.push(createTimer(timerIndex++, 10, 20, 30, "Third Title", true))
-
-let oReactivity = [ref(0), ref(0), ref(0)]
-
 let isFocused: boolean = true
+let oTimers: ITimer[] = []
+let oDisabled: Ref<boolean>[] = [ref(false), ref(false), ref(false)]
+let oStyleUPD: Ref<boolean>[] = [ref(false), ref(false), ref(false)]
+let oTimerDisabledA: Ref<boolean>[] = [ref(false), ref(false), ref(false)]
+let oIndexes: number[] = []
+
+//====================
+
+const pushTo: (timer: ITimer, index: number) => void = (timer, index) => {
+  oTimers.push(timer)
+  oIndexes.push(index)
+}
 
 const toggleTimers: (active: boolean, timer: ITimer) => void = (active, timer) => {
-  oTimers.filter(x => x.id != timer.id).forEach(x => {
-    x.active = active
-    oReactivity[x.id].value = oReactivity[x.id].value + 1 % 2
+  oIndexes.filter(x => x != timer.id).forEach(x => {
+    oTimerDisabledA[x].value = !active
+    oDisabled[x].value = !active
   })
 }
 
 const handleTimerStarted = (timer: ITimer) => {
-  timer.active = true
+  oTimerDisabledA[timer.id].value = false
+  oDisabled[timer.id].value = false
   toggleTimers(false, timer)
 }
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   if (finished) {
     let elapsed = 0
+
     let interval = setInterval(() => {
       if (isFocused) {
         document.title = "Timer App"
         clearInterval(interval)
-      } else if (elapsed % 2 === 0)
+        oStyleUPD[timer.id].value = false
+        toggleTimers(true, timer)
+      } else if (elapsed % 2 === 0) {
         document.title = "**** TIMER ENDED ****"
-      else if (elapsed % 2 === 1)
+        oStyleUPD[timer.id].value = true
+      } else if (elapsed % 2 === 1) {
         document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
+        oStyleUPD[timer.id].value = false
+      }
 
       elapsed = (elapsed + 1) % 2
     }, 1000)
@@ -44,6 +55,14 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   }
 }
 
+//====================
+
+pushTo(createTimer(0, 0, 0, 10, "First Title", true), 0)
+pushTo(createTimer(1, 1, 2, 3, "Second Title", true), 1)
+pushTo(createTimer(2, 10, 20, 30, "Third Title", true), 2)
+
+//====================
+
 window.addEventListener("focus", function() {
   isFocused = true
 })
@@ -51,7 +70,6 @@ window.addEventListener("focus", function() {
 window.addEventListener("blur", function() {
   isFocused = false
 })
-
 </script>
 
 <template>
@@ -68,8 +86,8 @@ window.addEventListener("blur", function() {
     </div>
     <div class="px-4 py-4 my-5">
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col" v-for="(timer, index) in oTimers">
-          <Timer :object="timer" :key="oReactivity[index].value" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
+        <div class="col" v-for="index in oIndexes">
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
         </div>
       </div>
     </div>

@@ -25,8 +25,11 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer }>(), {
-    object: () => createEmptyTimer()
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated: boolean, timerDisabled: boolean }>(), {
+    object: () => createEmptyTimer(),
+    disabled: false,
+    styleUpdated: false,
+    timerDisabled: false
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void}>()
 
@@ -94,15 +97,17 @@ const resetTimer = function () {
 }
 
 const cardBorder = computed(() => {
-    if (littleTest.object.active) {
-        return "card border-success"
-    } else {
+    if (littleTest.styleUpdated) {
+        return "card border-warning"
+    } else if (littleTest.timerDisabled) {
         return "card border-danger"
+    } else {
+        return "card border-success"
     }
 })
 
 const appendDisabled = computed(() => {
-    if (!littleTest.object.active) return "disabled"
+    if (littleTest.disabled) return "disabled"
     else return ""
 })
 
