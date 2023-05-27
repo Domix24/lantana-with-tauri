@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { ITimer, createEmptyTimer } from '../types/ITimer';
 
 interface IDisplay {
@@ -57,8 +57,8 @@ const show: (x: number) => string = (x: number) => pad(Math.floor(x / 3600)) + "
 const format: (x: Date) => string = (x: Date) => x.toLocaleTimeString([], { timeStyle: 'medium' })
 const coutdowntotimer: (x: number) => IDisplay = (x) => ({ hours: Math.floor(x / 3600), minutes: Math.floor((x - Math.floor(x / 3600) * 3600) / 60), seconds: (x - Math.floor(x / 60) * 60) })
 
-const originDisplay : IDisplay = coutdowntotimer(countdown.elapsed)
-const originElapsed : number = countdown.elapsed
+const originElapsed: number = countdown.elapsed
+let updatedElapsed = ref(originElapsed)
 
 const startTimer = function () {
     const baseDate = Date.now()
@@ -92,8 +92,11 @@ const stopTimer = function () {
 
 const resetTimer = function () {
     const baseDate = Date.now()
-    countdown.elapsed = originElapsed
-    scheduled.update(baseDate, originDisplay)
+
+    updatedElapsed.value = Math.ceil(updatedElapsed.value * ((littleTest.object.timerIncrement.increment + 100) / 100))
+
+    countdown.elapsed = updatedElapsed.value
+    scheduled.update(baseDate, coutdowntotimer(countdown.elapsed))
 }
 
 const cardBorder = computed(() => {
@@ -115,6 +118,11 @@ const showStartButton = computed(() => {
     if (countdown.elapsed === 0) return false
     else return !countdown.active
 })
+
+const resetButtonText = computed(() => {
+    if (littleTest.object.timerIncrement.active) return "Reset +" + littleTest.object.timerIncrement.increment + "%"
+    else return "Reset"
+})
 </script>
 
 <template>
@@ -126,7 +134,7 @@ const showStartButton = computed(() => {
             <div class="d-grid gap-2 d-md-flex">
                 <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
                 <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
-                <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimer" v-if="!countdown.active">Reset</a>
+                <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimer" v-if="!countdown.active">{{ resetButtonText }}</a>
             </div>
         </div>
         <div class="card-footer text-body-secondary">Something</div>

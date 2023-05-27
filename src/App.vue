@@ -57,9 +57,9 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 
 //====================
 
-pushTo(createTimer(0, 0, 0, 10, "First Title", true))
+pushTo(createTimer(0, 0, 0, 10, "First Title", true, 50))
 pushTo(createTimer(1, 1, 2, 3, "Second Title", true))
-pushTo(createTimer(2, 10, 20, 30, "Third Title", true))
+pushTo(createTimer(2, 10, 20, 30, "Third Title", true, 10))
 
 //====================
 
