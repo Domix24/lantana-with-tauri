@@ -1,0 +1,4 @@
+{
+    "image":"mcr.microsoft.com/devcontainers/universal:2",
+	"postCreateCommand": "echo \"alias run='npm install && npm run local'\\nrun\" >> ~/.bashrc"
+}
