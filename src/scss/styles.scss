@@ -1,1 +1,21 @@
 @import "~bootstrap/scss/bootstrap";
+
+@mixin font($font-family, $font-file, $font-style) {
+    @font-face {
+        font-family: $font-family;
+        src: url($font-file+'.ttf') format('truetype');
+        font-weight: normal;
+        font-style: $font-style;
+    }
+}
+
+@include font("Digital 7", "../assets/digital_7/digital-7", normal);
+@include font("Digital 7", "../assets/digital_7/digital-7 (italic)", italic);
+@include font("Digital 7 Mono", "../assets/digital_7/digital-7 (mono)", normal);
+@include font("Digital 7 Mono", "../assets/digital_7/digital-7 (mono italic)", italic);
+
+.custom-font {
+    font-family: "Digital 7 Mono", 'Courier New', Courier, monospace;
+    font-style: normal;
+    @include font-size(2rem);
+}

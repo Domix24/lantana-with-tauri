@@ -29,11 +29,12 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated: boolean, timerDisabled: boolean }>(), {
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated: boolean, timerDisabled: boolean, idText: string }>(), {
     object: () => createEmptyTimer(),
     disabled: false,
     styleUpdated: false,
-    timerDisabled: false
+    timerDisabled: false,
+    idText: "-"
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void}>()
 
@@ -180,7 +181,7 @@ watch(showResetDropdown, (val) => {
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
-            <p class="card-text">{{show(countdown.elapsed)}}</p>
+            <p class="card-text custom-font">{{show(countdown.elapsed)}}</p>
             <div class="d-grid gap-2 d-md-flex">
                 <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
                 <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
@@ -193,6 +194,12 @@ watch(showResetDropdown, (val) => {
                 </ul>
             </div>
         </div>
-        <div class="card-footer text-body-secondary">Something</div>
+    </div>
+    <div :id="idText" class="card border-success d-none">
+        <div class="card-header">{{object.title}}</div>
+        <div class="card-body">
+            <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
+            <p class="card-text custom-font">{{show(0)}}</p>
+        </div>
     </div>
 </template>
