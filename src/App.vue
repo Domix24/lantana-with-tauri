@@ -75,9 +75,9 @@ const processResetTimers = () => {
 
 //====================
 
-pushTo(createTimer(0, 0, 0, 10, "First Title", true, 50))
-pushTo(createTimer(1, 0, 0, 45, "Second Title", true))
-pushTo(createTimer(2, 0, 0, 30, "Third Title", true, 10))
+pushTo(createTimer(0, 0, 10, 0, "First Title", true, 50))
+pushTo(createTimer(1, 0, 45, 0, "Second Title", true))
+pushTo(createTimer(2, 0, 30, 0, "Third Title", true, 10))
 
 //====================
 
