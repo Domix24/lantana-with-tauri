@@ -66,7 +66,7 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 
 const processResetTimers = () => {
     clearInterval(interval)
-    document.title = "Timer App"
+    document.title = "Lantana 🌼"
     toggleTimers(true, -1)
     oIndexes.forEach(x => {
       oStyleUPD[x].value = false
@@ -114,7 +114,7 @@ onMounted(() => {
   <main>
     <div class="px-4 py-5 my-5 text-center">
       <img class="d-block mx-auto mb-4" src="/logo.svg" width="72" height="74">
-      <h1 class="display-5 fw-bold text-body-emphasis">@domix24</h1>
+      <h1 class="display-5 fw-bold text-body-emphasis">Lantana 🌼</h1>
       <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">List of <em>Timers</em></p>
         <div class="gap-2 justify-content-sm-center d-none"> <!-- d-grid d-sm-flex -->
