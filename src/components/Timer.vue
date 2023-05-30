@@ -114,7 +114,7 @@ const resetTimerOriginal = function () {
 
 const resetTimerIncrement = function () {
     _resetTimer(() => {
-        updatedElapsed.value = Math.ceil(updatedElapsed.value * ((littleTest.object.timerIncrement.increment + 100) / 100))
+        updatedElapsed.value = Math.ceil(Math.ceil(updatedElapsed.value * ((littleTest.object.timerIncrement.increment + 100) / 100)) / 10) * 10
 
         return updatedElapsed.value
     })
@@ -145,7 +145,7 @@ const showStartButton = computed(() => {
 })
 
 const resetButtonText = computed(() => {
-    if (littleTest.object.timerIncrement.active) return Math.ceil(updatedElapsed.value * ((littleTest.object.timerIncrement.increment + 100) / 100))
+    if (littleTest.object.timerIncrement.active) return Math.ceil(Math.ceil(updatedElapsed.value * ((littleTest.object.timerIncrement.increment + 100) / 100)) / 10) * 10
     else return 0
 })
 
