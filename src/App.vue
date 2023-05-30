@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, watch } from 'vue';
+import { Ref, onMounted, ref } from 'vue';
 import Timer from './components/Timer.vue'
 import { ITimer, createTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
@@ -12,7 +12,6 @@ let oIndexes: number[] = []
 let oIds: string[] = []
 let interval: NodeJS.Timer
 let modalWindowObject: Modal
-const isFocused: Ref<boolean> = ref(true)
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 
