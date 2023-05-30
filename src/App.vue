@@ -81,26 +81,6 @@ pushTo(createTimer(2, 0, 30, 0, "Third Title", true, 25))
 
 //====================
 
-window.addEventListener("focus", function() {
-  isFocused.value = true
-})
-
-window.addEventListener("blur", function() {
-  isFocused.value = false
-})
-
-//====================
-
-watch(isFocused, (val) => {
-  if (val) {
-    processResetTimers()
-  } else {
-
-  }
-})
-
-//====================
-
 onMounted(() => {
   if (modalWindow.value) {
     modalWindow.value.addEventListener("hide.bs.modal", () => { processResetTimers() })  
