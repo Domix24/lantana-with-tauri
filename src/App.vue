@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from 'vue';
 import Timer from './components/Timer.vue'
+import CreateTimer from './components/CreateTimer.vue'
 import { ITimer, createTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
@@ -121,4 +122,5 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  <CreateTimer />
 </template>
