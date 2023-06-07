@@ -43,29 +43,25 @@ onMounted(() => {
         </div>
         <div class="modal-body">
           <form class="row g-3 needs-validation" novalidate ref="formElement">
-            <div class="col-12">
+            <div class="col-12 position-relative">
               <label for="validationCustom01" class="form-label">Title</label>
               <input type="text" class="form-control" id="validationCustom01" required>
-              <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Looks not good!</div>
+              <div class="invalid-tooltip">Looks not good!</div>
             </div>
-            <div class="col-4">
+            <div class="col-4 position-relative">
               <label for="validationCustom02" class="form-label">Hours</label>
               <input type="number" class="form-control" id="validationCustom02" required min="0" max="99">
-              <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Looks not good!</div>
+              <div class="invalid-tooltip">Looks not good!</div>
             </div>
-            <div class="col-4">
+            <div class="col-4 position-relative">
               <label for="validationCustom03" class="form-label">Minutes</label>
               <input type="number" class="form-control" id="validationCustom03" required min="0" max="59">
-              <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Looks not good!</div>
+              <div class="invalid-tooltip">Looks not good!</div>
             </div>
-            <div class="col-4">
+            <div class="col-4 position-relative">
               <label for="validationCustom04" class="form-label">Seconds</label>
               <input type="number" class="form-control" id="validationCustom04" required min="0" max="99">
-              <div class="valid-feedback">Looks good!</div>
-              <div class="invalid-feedback">Looks not good!</div>
+              <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-12">
               <label for="validationCustom05" class="form-label">Increment</label>
@@ -75,8 +71,7 @@ onMounted(() => {
                 </div>
                 <input type="number" class="form-control" aria-label="Text input with radio button" id="validationCustom05" min="0" max="100">
                 <span class="input-group-text">%</span>
-                <div class="valid-feedback">Looks good!</div>
-                <div class="invalid-feedback">Looks not good!</div>
+                <div class="invalid-tooltip">Looks not good!</div>
               </div>
             </div>
           </form>
