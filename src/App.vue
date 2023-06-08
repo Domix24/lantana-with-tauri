@@ -122,5 +122,5 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <CreateTimer />
+  <CreateTimer v-model="oTimers[0]" />
 </template>
