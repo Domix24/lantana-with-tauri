@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref } from 'vue';
+import { Ref, onMounted, ref, computed } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createTimer } from './types/ITimer'
+import { ITimer, createTimer, createEmptyTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
 let oTimers: ITimer[] = []
 let oDisabled: Ref<boolean>[] = []
 let oStyleUPD: Ref<boolean>[] = []
 let oTimerDisabledA: Ref<boolean>[] = []
+let oShowTimer: Ref<boolean>[] = []
 let oIndexes: number[] = []
 let oIds: string[] = []
 let interval: NodeJS.Timer
 let modalWindowObject: Modal
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
+const editableTimer: Ref<ITimer> = ref(undefined as ITimer)
 
 //====================
 
@@ -24,6 +26,7 @@ const pushTo: (timer: ITimer) => void = timer => {
   oDisabled.push(ref(false))
   oStyleUPD.push(ref(false))
   oTimerDisabledA.push(ref(false))
+  oShowTimer.push(ref(true))
   oIds.push("timerid" + timer.id)
 }
 
@@ -64,6 +67,20 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   }
 }
 
+const handleTimerEditStarted = (timer: ITimer) => {
+  oShowTimer[timer.id].value = false
+  editableTimer.value = timer
+}
+
+const handleModalclosed = () => {
+  oShowTimer[editableTimer.value.id].value = true
+  editableTimer.value = undefined
+}
+
+const handleTimerUpdated = newTimer => {
+  oTimers[newTimer.id] = newTimer
+}
+
 const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
@@ -78,6 +95,12 @@ const processResetTimers = () => {
 pushTo(createTimer(0, 0, 10, 0, "First Title", true))
 pushTo(createTimer(1, 0, 45, 0, "Second Title", true))
 pushTo(createTimer(2, 0, 30, 0, "Third Title", true, 25))
+
+//====================
+
+const showEditModal = computed(() => {
+  return editableTimer.value !== undefined
+})
 
 //====================
 
@@ -105,7 +128,8 @@ onMounted(() => {
     <div class="px-4 py-4 my-5">
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in oIndexes">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" />
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" v-if="oShowTimer[index].value" />
+          <Timer disabled="true" timer-disabled="true" v-else />
         </div>
       </div>
     </div>
@@ -122,5 +146,5 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <CreateTimer v-model="oTimers[0]" />
+  <CreateTimer v-model="editableTimer" v-if="showEditModal" @closed="handleModalclosed" @updated="handleTimerUpdated" />
 </template>

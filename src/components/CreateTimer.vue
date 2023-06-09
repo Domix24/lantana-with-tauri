@@ -8,12 +8,6 @@ const modalWindow: Ref<HTMLDivElement> = ref({} as HTMLDivElement)
 const formElement: Ref<HTMLFormElement> = ref({} as HTMLFormElement)
 const submitElement: Ref<HTMLButtonElement> = ref({} as HTMLButtonElement)
 
-const active: ref<boolean> = ref(props.modelValue.timerIncrement.active)
-const title: ref<string> = ref(props.modelValue.title)
-const hours: ref<number> = ref(props.modelValue.hour)
-const minutes: ref<number> = ref(props.modelValue.second)
-const seconds: ref<number> = ref(props.modelValue.minute)
-
 const inputTitle: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 const inputHours: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 const inputMinutes: ref<HTMLInputElement> = ref({} as HTMLInputElement)
@@ -21,10 +15,28 @@ const inputSeconds: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 const inputIncrement: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 
 const props = defineProps<{ modelValue: ITimer }>()
-const emits = defineEmits<{(event: 'update:modelValue', timer: ITimer): void}>()
+const emits = defineEmits<{(event: 'update:modelValue', timer: ITimer): void, (event: 'closed'): void, (event: 'updated', timer: ITimer): void}>()
+
+const active: ref<boolean> = ref(props.modelValue.timerIncrement.active)
+const title: ref<string> = ref(props.modelValue.title)
+const hours: ref<number> = ref(props.modelValue.hour)
+const minutes: ref<number> = ref(props.modelValue.minute)
+const seconds: ref<number> = ref(props.modelValue.second)
 
 const handleChange = event => {
   active.value = !active.value
+}
+
+const handleInput = input => {
+  if (input === "hoursUpdate") { timerHours.value = inputHours.value.value }
+  else if (input === "minutesUpdate") { timerMinutes.value = inputMinutes.value.value }
+  else if (input === "secondsUpdate") { timerSeconds.value = inputSeconds.value.value }
+}
+
+const parseZero = string => {
+  let parsed = parseInt(string)
+  if (isNaN(parsed)) return 0
+  else return parsed
 }
 
 const checkedValue = computed(() => {
@@ -35,16 +47,19 @@ const disabledValue = computed(() => {
   return active.value ? undefined : "x"
 })
 
-const timerHours = computed(() => {
-  return parseInt(inputHours.value.value)
+const timerHours = computed({
+  get () { return hours.value },
+  set (x) { hours.value = parseZero(x) }
 })
 
-const timerMinutes = computed(() => {
-  return parseInt(inputMinutes.value.value)
+const timerMinutes = computed({
+  get () { return minutes.value },
+  set (x) { minutes.value = parseZero(x) }
 })
 
-const timerSeconds = computed(() => {
-  return parseInt(inputSeconds.value.value)
+const timerSeconds = computed({
+  get () { return seconds.value },
+  set (x) { seconds.value = parseZero(x) }
 })
 
 const timerIncrementActive = computed(() => {
@@ -55,14 +70,13 @@ const timerIncrementActive = computed(() => {
 })
 
 const timerIncrementValue = computed(() => {
-  console.log(parseInt(inputIncrement.value.value))
   if (isNaN(parseInt(inputIncrement.value.value))) return 0
   else return parseInt(inputIncrement.value.value)
 })
 
 onMounted(() => {
   if (modalWindow.value && formElement.value && submitElement.value) {
-    modalWindow.value.addEventListener("hide.bs.modal", () => { })  
+    modalWindow.value.addEventListener("hide.bs.modal", () => { emits("closed") })  
 
     modalWindowObject = new Modal(modalWindow.value)
     modalWindowObject.show()
@@ -71,24 +85,18 @@ onMounted(() => {
       event.preventDefault()
       event.stopPropagation()
 
-      console.log(timerIncrementValue.value)
-      console.log(inputIncrement.value.value)
-
       if (formElement.value.checkValidity()) {
         const updatedModel = createEmptyTimer()
         updatedModel.active = props.modelValue.active
         updatedModel.minute = timerMinutes.value
         updatedModel.hour = timerHours.value
         updatedModel.second = timerSeconds.value
-        updatedModel.title = inputTitle.value.value
-        updatedModel.id = props.modelValue.id
-        updatedModel.timerIncrement.active = timerIncrementActive.value
-        updatedModel.timerIncrement.increment = timerIncrementValue.value
+        updatedModel.title = props.modelValue.title
+        updatedModel.timerIncrement.active = props.modelValue.timerIncrement.active
+        updatedModel.timerIncrement.increment = props.modelValue.timerIncrement.increment
 
-        //console.log(props.modelValue)
-        //console.log(updatedModel)
-
-        //emits("update:modelValue", updatedModel)
+        emits("updated", updatedModel)
+        modalWindowObject.hide()
       }
 
       formElement.value.classList.add('was-validated')
@@ -118,17 +126,17 @@ onMounted(() => {
             </div>
             <div class="col-4 position-relative">
               <label for="validationCustom02" class="form-label">Hours</label>
-              <input type="number" class="form-control" id="validationCustom02" required min="0" max="99" :value="modelValue.hour" ref="inputHours">
+              <input type="number" class="form-control" id="validationCustom02" required min="0" max="99" :value="timerHours" @input="handleInput('hoursUpdate')" ref="inputHours">
               <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-4 position-relative">
               <label for="validationCustom03" class="form-label">Minutes</label>
-              <input type="number" class="form-control" id="validationCustom03" required min="0" max="59" :value="modelValue.minute" ref="inputMinutes">
+              <input type="number" class="form-control" id="validationCustom03" required min="0" max="59" :value="timerMinutes" @input="handleInput('minutesUpdate')" ref="inputMinutes">
               <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-4 position-relative">
               <label for="validationCustom04" class="form-label">Seconds</label>
-              <input type="number" class="form-control" id="validationCustom04" required min="0" max="99" :value="modelValue.second" ref="inputSeconds">
+              <input type="number" class="form-control" id="validationCustom04" required min="0" max="99" :value="timerSeconds" @input="handleInput('secondsUpdate')" ref="inputSeconds">
               <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-12">
