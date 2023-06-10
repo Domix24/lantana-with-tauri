@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, Ref, onMounted } from 'vue'
+import { computed, ref, Ref, onMounted } from 'vue'
 import { ITimer, createEmptyTimer } from '../types/ITimer'
 import { Modal } from 'bootstrap'
 
@@ -8,41 +8,41 @@ const modalWindow: Ref<HTMLDivElement> = ref({} as HTMLDivElement)
 const formElement: Ref<HTMLFormElement> = ref({} as HTMLFormElement)
 const submitElement: Ref<HTMLButtonElement> = ref({} as HTMLButtonElement)
 
-const inputTitle: ref<HTMLInputElement> = ref({} as HTMLInputElement)
-const inputHours: ref<HTMLInputElement> = ref({} as HTMLInputElement)
-const inputMinutes: ref<HTMLInputElement> = ref({} as HTMLInputElement)
-const inputSeconds: ref<HTMLInputElement> = ref({} as HTMLInputElement)
-const inputIncrement: ref<HTMLInputElement> = ref({} as HTMLInputElement)
+const inputTitle: Ref<HTMLInputElement> = ref({} as HTMLInputElement)
+const inputHours: Ref<HTMLInputElement> = ref({} as HTMLInputElement)
+const inputMinutes: Ref<HTMLInputElement> = ref({} as HTMLInputElement)
+const inputSeconds: Ref<HTMLInputElement> = ref({} as HTMLInputElement)
+const inputIncrement: Ref<HTMLInputElement> = ref({} as HTMLInputElement)
 
 const props = defineProps<{ modelValue: ITimer }>()
 const emits = defineEmits<{(event: 'update:modelValue', timer: ITimer): void, (event: 'closed'): void}>()
 
-const title: ref<string> = ref(props.modelValue.title)
-const hours: ref<number> = ref(props.modelValue.hour)
-const minutes: ref<number> = ref(props.modelValue.minute)
-const seconds: ref<number> = ref(props.modelValue.second)
-const active: ref<boolean> = ref(props.modelValue.timerIncrement.active)
-const increment: ref<number> = ref(props.modelValue.timerIncrement.increment)
+const title: Ref<string> = ref(props.modelValue.title)
+const hours: Ref<number> = ref(props.modelValue.hour)
+const minutes: Ref<number> = ref(props.modelValue.minute)
+const seconds: Ref<number> = ref(props.modelValue.second)
+const active: Ref<boolean> = ref(props.modelValue.timerIncrement.active)
+const increment: Ref<number> = ref(props.modelValue.timerIncrement.increment)
 
-const handleChange = event => {
+const handleChange = () => {
   timerActive.value = !timerActive.value
 }
 
-const handleInput = input => {
-  if (input === "hoursUpdate") { timerHours.value = inputHours.value.value }
-  else if (input === "minutesUpdate") { timerMinutes.value = inputMinutes.value.value }
-  else if (input === "secondsUpdate") { timerSeconds.value = inputSeconds.value.value }
+const handleInput: (input: string) => void = input => {
+  if (input === "hoursUpdate") { timerHours.value = parseZero(inputHours.value.value) }
+  else if (input === "minutesUpdate") { timerMinutes.value = parseZero(inputMinutes.value.value) }
+  else if (input === "secondsUpdate") { timerSeconds.value = parseZero(inputSeconds.value.value) }
   else if (input === "titleUpdate") { timerTitle.value = inputTitle.value.value }
-  else if (input === "incrementUpdate") { timerIncrement.value = inputIncrement.value.value }
+  else if (input === "incrementUpdate") { timerIncrement.value = parseZero(inputIncrement.value.value) }
 }
 
-const parseZero = string => {
+const parseZero: (string: string) => number = string => {
   let parsed = parseInt(string)
   if (isNaN(parsed)) return 0
   else return parsed
 }
 
-const parseTitle = string => {
+const parseTitle: (string: string) => string = string => {
   if (string.length) return string
   else return ""
 }
@@ -54,17 +54,17 @@ const timerTitle = computed({
 
 const timerHours = computed({
   get () { return hours.value },
-  set (x) { hours.value = parseZero(x) }
+  set (x) { hours.value = parseZero(x + "") }
 })
 
 const timerMinutes = computed({
   get () { return minutes.value },
-  set (x) { minutes.value = parseZero(x) }
+  set (x) { minutes.value = parseZero(x + "") }
 })
 
 const timerSeconds = computed({
   get () { return seconds.value },
-  set (x) { seconds.value = parseZero(x) }
+  set (x) { seconds.value = parseZero(x + "") }
 })
 
 const timerActive = computed({
@@ -79,7 +79,7 @@ const timerActive = computed({
 const timerIncrement = computed({
   get () { return increment.value },
   set (x) {
-    increment.value = parseZero(x)
+    increment.value = parseZero(x + "")
     active.value = !!increment.value
   }
 })

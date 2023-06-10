@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createTimer, createEmptyTimer } from './types/ITimer'
+import { ITimer, createTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
 let oTimers: ITimer[] = []
@@ -77,10 +77,6 @@ const handleModalclosed = () => {
   editIndex.value = -1
 }
 
-const handleTimerUpdated = newTimer => {
-  editIndex.value = newTimer.id
-}
-
 const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
@@ -92,9 +88,9 @@ const processResetTimers = () => {
 
 //====================
 
-pushTo(createTimer(0, 0, 10, 0, "First Title", true))
-pushTo(createTimer(1, 0, 45, 0, "Second Title", true))
-pushTo(createTimer(2, 0, 30, 0, "Third Title", true, 25))
+pushTo(createTimer(0, 0, 0, 0, "First Title", true))
+pushTo(createTimer(1, 0, 0, 0, "Second Title", true))
+pushTo(createTimer(2, 0, 0, 0, "Third Title", true))
 
 //====================
 
