@@ -85,11 +85,11 @@ const timerIncrement = computed({
 })
 
 const checkedValue = computed(() => {
-  return active.value ? "x" : undefined
+  return active.value ? true : undefined
 })
 
 const disabledValue = computed(() => {
-  return active.value ? undefined : "x"
+  return active.value ? undefined : true
 })
 
 onMounted(() => {

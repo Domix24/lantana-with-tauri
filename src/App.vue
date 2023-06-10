@@ -17,6 +17,7 @@ let modalWindowObject: Modal
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
+const valueTrue: boolean = true
 
 //====================
 
@@ -125,7 +126,7 @@ onMounted(() => {
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in oIndexes">
           <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" v-if="oShowTimer[index].value" />
-          <Timer disabled="true" timer-disabled="true" v-else />
+          <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
         </div>
       </div>
     </div>
