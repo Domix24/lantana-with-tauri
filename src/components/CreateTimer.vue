@@ -105,6 +105,7 @@ onMounted(() => {
 
       if (formElement.value.checkValidity()) {
         const updatedModel = createEmptyTimer()
+        updatedModel.id = props.modelValue.id
         updatedModel.active = props.modelValue.active
         updatedModel.minute = timerMinutes.value
         updatedModel.hour = timerHours.value
