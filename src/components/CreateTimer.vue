@@ -15,22 +15,25 @@ const inputSeconds: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 const inputIncrement: ref<HTMLInputElement> = ref({} as HTMLInputElement)
 
 const props = defineProps<{ modelValue: ITimer }>()
-const emits = defineEmits<{(event: 'update:modelValue', timer: ITimer): void, (event: 'closed'): void, (event: 'updated', timer: ITimer): void}>()
+const emits = defineEmits<{(event: 'update:modelValue', timer: ITimer): void, (event: 'closed'): void}>()
 
-const active: ref<boolean> = ref(props.modelValue.timerIncrement.active)
 const title: ref<string> = ref(props.modelValue.title)
 const hours: ref<number> = ref(props.modelValue.hour)
 const minutes: ref<number> = ref(props.modelValue.minute)
 const seconds: ref<number> = ref(props.modelValue.second)
+const active: ref<boolean> = ref(props.modelValue.timerIncrement.active)
+const increment: ref<number> = ref(props.modelValue.timerIncrement.increment)
 
 const handleChange = event => {
-  active.value = !active.value
+  timerActive.value = !timerActive.value
 }
 
 const handleInput = input => {
   if (input === "hoursUpdate") { timerHours.value = inputHours.value.value }
   else if (input === "minutesUpdate") { timerMinutes.value = inputMinutes.value.value }
   else if (input === "secondsUpdate") { timerSeconds.value = inputSeconds.value.value }
+  else if (input === "titleUpdate") { timerTitle.value = inputTitle.value.value }
+  else if (input === "incrementUpdate") { timerIncrement.value = inputIncrement.value.value }
 }
 
 const parseZero = string => {
@@ -39,12 +42,14 @@ const parseZero = string => {
   else return parsed
 }
 
-const checkedValue = computed(() => {
-  return active.value ? "x" : undefined
-})
+const parseTitle = string => {
+  if (string.length) return string
+  else return ""
+}
 
-const disabledValue = computed(() => {
-  return active.value ? undefined : "x"
+const timerTitle = computed({
+  get () { return title.value },
+  set (x) { title.value = parseTitle(x) }
 })
 
 const timerHours = computed({
@@ -62,16 +67,29 @@ const timerSeconds = computed({
   set (x) { seconds.value = parseZero(x) }
 })
 
-const timerIncrementActive = computed(() => {
-  if (active.value) return true
-  else if (isNaN(parseInt(inputIncrement.value.value))) return false
-  else if (parseInt(inputIncrement.value.value)) return true
-  else return false
+const timerActive = computed({
+  get () { return active.value },
+  set (x) {
+    active.value = x
+    if (!x) increment.value = 0
+    else increment.value = 1
+  }
 })
 
-const timerIncrementValue = computed(() => {
-  if (isNaN(parseInt(inputIncrement.value.value))) return 0
-  else return parseInt(inputIncrement.value.value)
+const timerIncrement = computed({
+  get () { return increment.value },
+  set (x) {
+    increment.value = parseZero(x)
+    active.value = !!increment.value
+  }
+})
+
+const checkedValue = computed(() => {
+  return active.value ? "x" : undefined
+})
+
+const disabledValue = computed(() => {
+  return active.value ? undefined : "x"
 })
 
 onMounted(() => {
@@ -91,11 +109,11 @@ onMounted(() => {
         updatedModel.minute = timerMinutes.value
         updatedModel.hour = timerHours.value
         updatedModel.second = timerSeconds.value
-        updatedModel.title = props.modelValue.title
-        updatedModel.timerIncrement.active = props.modelValue.timerIncrement.active
-        updatedModel.timerIncrement.increment = props.modelValue.timerIncrement.increment
+        updatedModel.title = timerTitle.value
+        updatedModel.timerIncrement.active = timerActive.value
+        updatedModel.timerIncrement.increment = timerIncrement.value
 
-        emits("updated", updatedModel)
+        emits("update:modelValue", updatedModel)
         modalWindowObject.hide()
       }
 
@@ -121,7 +139,7 @@ onMounted(() => {
           <form class="row g-3 needs-validation" novalidate ref="formElement">
             <div class="col-12 position-relative">
               <label for="validationCustom01" class="form-label">Title</label>
-              <input type="text" class="form-control" id="validationCustom01" required :value="modelValue.title" ref="inputTitle">
+              <input type="text" class="form-control" id="validationCustom01" required :value="timerTitle" @input="handleInput('titleUpdate')" ref="inputTitle">
               <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-4 position-relative">
@@ -136,7 +154,7 @@ onMounted(() => {
             </div>
             <div class="col-4 position-relative">
               <label for="validationCustom04" class="form-label">Seconds</label>
-              <input type="number" class="form-control" id="validationCustom04" required min="0" max="99" :value="timerSeconds" @input="handleInput('secondsUpdate')" ref="inputSeconds">
+              <input type="number" class="form-control" id="validationCustom04" required min="0" max="59" :value="timerSeconds" @input="handleInput('secondsUpdate')" ref="inputSeconds">
               <div class="invalid-tooltip">Looks not good!</div>
             </div>
             <div class="col-12">
@@ -145,7 +163,7 @@ onMounted(() => {
                 <div class="input-group-text">
                   <input class="form-check-input mt-0" type="checkbox" aria-label="Radio button for following text input" :checked="checkedValue" @change="handleChange">
                 </div>
-                <input type="number" class="form-control" aria-label="Text input with radio button" id="validationCustom05" min="0" max="100" :value="modelValue.timerIncrement.increment" :disabled="disabledValue" ref="inputIncrement">
+                <input type="number" class="form-control" aria-label="Text input with radio button" id="validationCustom05" min="0" max="100" :value="timerIncrement" :disabled="disabledValue" @input="handleInput('incrementUpdate')" ref="inputIncrement">
                 <span class="input-group-text">%</span>
                 <div class="invalid-tooltip">Looks not good!</div>
               </div>

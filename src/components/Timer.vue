@@ -173,6 +173,11 @@ const showUpdatedReset = computed(() => {
     else return true
 })
 
+const showEditButton = computed(() => {
+    if (!countdown.elapsed) return true
+    else return !countdown.active
+})
+
 watch(showResetDropdown, (val) => {
     if (theDropdown.value && !val && theDropdown.value["classList"].contains("show")) {
         theDropdown.value["classList"].toggle("show")
@@ -196,7 +201,7 @@ watch(showResetDropdown, (val) => {
                     <li><a class="dropdown-item" v-on:click="resetTimerBack" v-if="showUpdatedReset">To {{show(updatedElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerIncrement">To {{show(resetButtonText)}}</a></li>
                 </ul>
-                <a class="btn btn-warning" :class="appendDisabled" v-on:click="editTimer" v-if="showStartButton">Edit</a>
+                <a class="btn btn-warning" :class="appendDisabled" v-on:click="editTimer" v-if="showEditButton">Edit</a>
             </div>
         </div>
     </div>

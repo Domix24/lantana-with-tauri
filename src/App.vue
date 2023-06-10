@@ -16,7 +16,7 @@ let interval: NodeJS.Timer
 let modalWindowObject: Modal
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
-const editableTimer: Ref<ITimer> = ref(undefined as ITimer)
+const editIndex: Ref<number> = ref(-1)
 
 //====================
 
@@ -68,17 +68,17 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
-  oShowTimer[timer.id].value = false
-  editableTimer.value = timer
+  editIndex.value = timer.id
+  oShowTimer[editIndex.value].value = false
 }
 
 const handleModalclosed = () => {
-  oShowTimer[editableTimer.value.id].value = true
-  editableTimer.value = undefined
+  oShowTimer[editIndex.value].value = true
+  editIndex.value = -1
 }
 
 const handleTimerUpdated = newTimer => {
-  oTimers[newTimer.id] = newTimer
+  editIndex.value = newTimer.id
 }
 
 const processResetTimers = () => {
@@ -99,7 +99,7 @@ pushTo(createTimer(2, 0, 30, 0, "Third Title", true, 25))
 //====================
 
 const showEditModal = computed(() => {
-  return editableTimer.value !== undefined
+  return editIndex.value > -1
 })
 
 //====================
@@ -146,5 +146,5 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <CreateTimer v-model="editableTimer" v-if="showEditModal" @closed="handleModalclosed" @updated="handleTimerUpdated" />
+  <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalclosed" />
 </template>
