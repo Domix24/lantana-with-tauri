@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createTimer } from './types/ITimer'
+import { ITimer, createTimer, createEmptyTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
 let oTimers: ITimer[] = []
@@ -79,7 +79,12 @@ const handleModalclosed = () => {
 }
 
 const handleCreateTimer = () => {
-  alert("create")
+  let newTimer = createEmptyTimer()
+  newTimer.id = oIndexes.length
+
+  pushTo(newTimer)
+
+  handleTimerEditStarted(newTimer)
 }
 
 const processResetTimers = () => {
