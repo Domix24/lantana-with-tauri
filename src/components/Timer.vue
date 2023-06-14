@@ -36,7 +36,7 @@ const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean
     timerDisabled: false,
     idText: "-"
 })
-const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void}>()
+const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void, (event: 'timerDeleted', timer: ITimer): void}>()
 
 const countdown: ICountdown = reactive({
     active: false,
@@ -99,6 +99,10 @@ const stopTimer = function () {
 
 const editTimer = function () {
     emits('timerEditStarted', littleTest.object)
+}
+
+const deleteTimer = function () {
+    emits('timerDeleted', littleTest.object)
 }
 
 const _resetTimer = function (func: ICountdownElapsedFunction) {
@@ -178,6 +182,11 @@ const showEditButton = computed(() => {
     else return !countdown.active
 })
 
+const showDeleteButton = computed(() => {
+    if (!countdown.elapsed) return true
+    else return !countdown.active
+})
+
 watch(showResetDropdown, (val) => {
     if (theDropdown.value && !val && theDropdown.value["classList"].contains("show")) {
         theDropdown.value["classList"].toggle("show")
@@ -202,6 +211,7 @@ watch(showResetDropdown, (val) => {
                     <li><a class="dropdown-item" v-on:click="resetTimerIncrement">To {{show(resetButtonText)}}</a></li>
                 </ul>
                 <a class="btn btn-warning" :class="appendDisabled" v-on:click="editTimer" v-if="showEditButton">Edit</a>
+                <a class="btn btn-danger" :class="appendDisabled" v-on:click="deleteTimer" v-if="showDeleteButton">Delete</a>
             </div>
         </div>
     </div>
