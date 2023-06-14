@@ -29,7 +29,7 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated: boolean, timerDisabled: boolean, idText: string }>(), {
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string }>(), {
     object: () => createEmptyTimer(),
     disabled: false,
     styleUpdated: false,
@@ -200,7 +200,7 @@ watch(showResetDropdown, (val) => {
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
             <p class="card-text custom-font">{{show(countdown.elapsed)}}</p>
-            <div class="d-grid gap-2 d-md-flex">
+            <div class="d-grid gap-2 d-md-flex flex-md-wrap">
                 <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
                 <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
                 <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimerOriginal" v-if="showResetButton">Reset</a>

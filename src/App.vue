@@ -33,10 +33,6 @@ const pushTo: (timer: ITimer) => void = timer => {
   oTimerDeleted.value.push(false)
 }
 
-const removeFrom: (timer: ITimer) => void = timer => {
-  oTimerDeleted.value[timer.id] = false
-}
-
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
   oIndexes.value.filter(x => x != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
@@ -80,7 +76,6 @@ const handleTimerEditStarted = (timer: ITimer) => {
 }
 
 const handleTimerDeleted = (timer: ITimer) => {
-  console.log(timer.id)
   oTimerDeleted.value[timer.id] = true
 }
 
@@ -109,18 +104,14 @@ const processResetTimers = () => {
 
 //====================
 
-pushTo(createTimer(0, 0, 0, 0, "First Title", true))
-pushTo(createTimer(1, 0, 0, 0, "Second Title", true))
-pushTo(createTimer(2, 0, 0, 0, "Third Title", true))
-
-//====================
-
 const showEditModal = computed(() => {
   return editIndex.value > -1
 })
 
 const getIndexList = computed(() => {
-  return oIndexes.value.filter((value, index) => !oTimerDeleted.value[index])
+  return oIndexes.value.filter(function () {
+    return !oTimerDeleted.value[arguments[1]]
+  })
 })
 
 //====================
