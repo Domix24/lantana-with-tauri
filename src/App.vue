@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createTimer, createEmptyTimer } from './types/ITimer'
+import { ITimer, createEmptyTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
 let oTimers: ITimer[] = []
@@ -10,10 +10,11 @@ let oDisabled: Ref<boolean>[] = []
 let oStyleUPD: Ref<boolean>[] = []
 let oTimerDisabledA: Ref<boolean>[] = []
 let oShowTimer: Ref<boolean>[] = []
-let oIndexes: number[] = []
+let oIndexes: Ref<number[]> = ref([])
 let oIds: string[] = []
 let interval: NodeJS.Timer
 let modalWindowObject: Modal
+let oTimerDeleted: Ref<boolean[]> = ref([])
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
@@ -23,16 +24,17 @@ const valueTrue: boolean = true
 
 const pushTo: (timer: ITimer) => void = timer => {
   oTimers.push(timer)
-  oIndexes.push(timer.id)
+  oIndexes.value.push(timer.id)
   oDisabled.push(ref(false))
   oStyleUPD.push(ref(false))
   oTimerDisabledA.push(ref(false))
   oShowTimer.push(ref(true))
   oIds.push("timerid" + timer.id)
+  oTimerDeleted.value.push(false)
 }
 
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
-  oIndexes.filter(x => x != timerId).forEach(x => {
+  oIndexes.value.filter(x => x != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
     oDisabled[x].value = !active
   })
@@ -73,6 +75,10 @@ const handleTimerEditStarted = (timer: ITimer) => {
   oShowTimer[editIndex.value].value = false
 }
 
+const handleTimerDeleted = (timer: ITimer) => {
+  oTimerDeleted.value[timer.id] = true
+}
+
 const handleModalclosed = () => {
   oShowTimer[editIndex.value].value = true
   editIndex.value = -1
@@ -80,7 +86,7 @@ const handleModalclosed = () => {
 
 const handleCreateTimer = () => {
   let newTimer = createEmptyTimer()
-  newTimer.id = oIndexes.length
+  newTimer.id = oIndexes.value.length
 
   pushTo(newTimer)
 
@@ -91,21 +97,22 @@ const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
     toggleTimers(true, -1)
-    oIndexes.forEach(x => {
+    oIndexes.value.forEach(x => {
       oStyleUPD[x].value = false
     })
 }
 
 //====================
 
-pushTo(createTimer(0, 0, 0, 0, "First Title", true))
-pushTo(createTimer(1, 0, 0, 0, "Second Title", true))
-pushTo(createTimer(2, 0, 0, 0, "Third Title", true))
-
-//====================
-
 const showEditModal = computed(() => {
   return editIndex.value > -1
+})
+
+const getIndexList = computed(() => {
+  return oIndexes.value.filter(function (value, index) {
+    let theObject = {value, index}
+    return !oTimerDeleted.value[theObject.index]
+  })
 })
 
 //====================
@@ -133,8 +140,8 @@ onMounted(() => {
     </div>
     <div class="px-4 py-4 my-5">
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col" v-for="index in oIndexes">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" v-if="oShowTimer[index].value" />
+        <div class="col" v-for="index in getIndexList">
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
         </div>
       </div>
