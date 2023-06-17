@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createTimer, createEmptyTimer } from './types/ITimer'
+import { ITimer, createEmptyTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 
 let oTimers: ITimer[] = []
@@ -109,8 +109,9 @@ const showEditModal = computed(() => {
 })
 
 const getIndexList = computed(() => {
-  return oIndexes.value.filter(function () {
-    return !oTimerDeleted.value[arguments[1]]
+  return oIndexes.value.filter(function (value, index) {
+    let theObject = {value, index}
+    return !oTimerDeleted.value[theObject.index]
   })
 })
 
