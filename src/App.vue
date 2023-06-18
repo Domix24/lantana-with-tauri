@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, computed } from 'vue';
+import { Ref, onMounted, ref, computed, watch } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
 import { ITimer, createEmptyTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
+import dexie from './database'
 
 let oTimers: ITimer[] = []
 let oDisabled: Ref<boolean>[] = []
@@ -85,6 +86,7 @@ const handleModalclosed = () => {
 }
 
 const handleCreateTimer = () => {
+  dexie.timers.add({}).then(() => { newValue.value = true }).catch()
   let newTimer = createEmptyTimer()
   newTimer.id = oIndexes.value.length
 
@@ -115,6 +117,13 @@ const getIndexList = computed(() => {
   })
 })
 
+const testSomething = ref([])
+const newValue = ref(false)
+watch(newValue, async () => {
+  testSomething.value = await dexie.timers.toArray()
+  newValue.value = false
+})
+
 //====================
 
 onMounted(() => {
@@ -122,6 +131,8 @@ onMounted(() => {
     modalWindow.value.addEventListener("hide.bs.modal", () => { processResetTimers() })  
 
     modalWindowObject = new Modal(modalWindow.value)
+
+    newValue.value = true
   }
 })
 </script>
@@ -156,6 +167,13 @@ onMounted(() => {
         </div>
         <div class="modal-body" ref="modalContent">
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="px-4 py-4 my-5">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div class="col" v-for="something in testSomething">
+        <li>{{something}}</li>
       </div>
     </div>
   </div>
