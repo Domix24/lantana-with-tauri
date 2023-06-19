@@ -81,12 +81,13 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
-  editIndex.value = oIndexes.value.map((value, index) => ({value, index})).filter(x => x.value === timer.id).map(x => x.index)[0]
+  editIndex.value = getIndexFromId(timer.id)
   oShowTimer[editIndex.value].value = false
 }
 
 const handleTimerDeleted = (timer: ITimer) => {
-  oTimerDeleted.value[timer.id] = true
+  oTimerDeleted.value[getIndexFromId(timer.id)] = true
+  dexie.timers.delete(timer.id)
 }
 
 const handleModalclosed = () => {
@@ -99,7 +100,6 @@ const handleCreateTimer = () => {
   delete newTimer["id"]
 
   dexie.timers.add(newTimer).then(timer => {
-    newValue.value = true
     pushTo(newTimer)
     handleTimerEditStarted(newTimer)
   }).catch(console.error)
