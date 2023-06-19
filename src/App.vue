@@ -72,7 +72,7 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
-  editIndex.value = timer.id
+  editIndex.value = oIndexes.value.map((value, index) => ({value, index})).filter(x => x.value === timer.id).map(x => x.index)[0]
   oShowTimer[editIndex.value].value = false
 }
 
@@ -86,13 +86,14 @@ const handleModalclosed = () => {
 }
 
 const handleCreateTimer = () => {
-  dexie.timers.add({}).then(() => { newValue.value = true }).catch()
   let newTimer = createEmptyTimer()
-  newTimer.id = oIndexes.value.length
+  delete newTimer["id"]
 
-  pushTo(newTimer)
-
-  handleTimerEditStarted(newTimer)
+  dexie.timers.add(newTimer).then(timer => {
+    newValue.value = true
+    pushTo(newTimer)
+    handleTimerEditStarted(newTimer)
+  }).catch(console.error)
 }
 
 const processResetTimers = () => {
@@ -111,10 +112,7 @@ const showEditModal = computed(() => {
 })
 
 const getIndexList = computed(() => {
-  return oIndexes.value.filter(function (value, index) {
-    let theObject = {value, index}
-    return !oTimerDeleted.value[theObject.index]
-  })
+  return oIndexes.value.map((value, index) => ({value, index})).filter(x => !oTimerDeleted.value[x.index]).map(x => x.index)
 })
 
 const testSomething = ref([])
