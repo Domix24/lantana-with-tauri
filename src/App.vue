@@ -92,6 +92,7 @@ const handleTimerDeleted = (timer: ITimer) => {
 
 const handleModalclosed = () => {
   oShowTimer[editIndex.value].value = true
+  dexie.timers.put(oTimers[editIndex.value])
   editIndex.value = -1
 }
 
