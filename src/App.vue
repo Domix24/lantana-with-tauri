@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, computed } from 'vue';
+import { Ref, onMounted, ref, computed, watch } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createEmptyTimer } from './types/ITimer'
+import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
+import { timerDatabase } from './database'
+
+//====================
+
+interface IIndexId {
+  value: number,
+  index: number
+}
+
+interface IPredicate {
+    (indexId: IIndexId): boolean
+}
+
+//====================
 
 let oTimers: ITimer[] = []
 let oDisabled: Ref<boolean>[] = []
@@ -19,6 +33,7 @@ const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
+const firstInit: Ref<boolean> = ref(false)
 
 //====================
 
@@ -33,16 +48,24 @@ const pushTo: (timer: ITimer) => void = timer => {
   oTimerDeleted.value.push(false)
 }
 
+const getIndexFromId: (id: number) => number = id => {
+  return getIndexesFromPredicate(x => x.value === id)[0]
+}
+
+const getIndexesFromPredicate: (predicate: IPredicate) => number[] = predicate => {
+  return oIndexes.value.map((value, index) => ({value, index})).filter(predicate).map(x => x.index)
+}
+
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
-  oIndexes.value.filter(x => x != timerId).forEach(x => {
+  getIndexesFromPredicate(x => x.value != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
     oDisabled[x].value = !active
   })
 }
 
 const handleTimerStarted = (timer: ITimer) => {
-  oTimerDisabledA[timer.id].value = false
-  oDisabled[timer.id].value = false
+  oTimerDisabledA[getIndexFromId(timer.id)].value = false
+  oDisabled[getIndexFromId(timer.id)].value = false
   toggleTimers(false, timer.id)
 }
 
@@ -50,17 +73,17 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   if (finished) {
     let elapsed = 0
 
-    modalContent.value.innerHTML = document.getElementById(oIds[timer.id])?.outerHTML + ""
+    modalContent.value.innerHTML = document.getElementById(oIds[getIndexFromId(timer.id)])?.outerHTML + ""
     modalContent.value.firstElementChild?.classList.remove("d-none")
     modalWindowObject.show()
 
     interval = setInterval(() => {
       if (elapsed % 2 === 0) {
         document.title = "**** TIMER ENDED ****"
-        oStyleUPD[timer.id].value = true
+        oStyleUPD[getIndexFromId(timer.id)].value = true
       } else if (elapsed % 2 === 1) {
         document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
-        oStyleUPD[timer.id].value = false
+        oStyleUPD[getIndexFromId(timer.id)].value = false
       }
 
       elapsed = (elapsed + 1) % 2
@@ -71,33 +94,35 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
-  editIndex.value = timer.id
+  editIndex.value = getIndexFromId(timer.id)
   oShowTimer[editIndex.value].value = false
 }
 
 const handleTimerDeleted = (timer: ITimer) => {
-  oTimerDeleted.value[timer.id] = true
+  oTimerDeleted.value[getIndexFromId(timer.id)] = true
+  timerDatabase.timers.delete(timer.id)
 }
 
 const handleModalclosed = () => {
   oShowTimer[editIndex.value].value = true
+  timerDatabase.timers.put(oTimers[editIndex.value])
   editIndex.value = -1
 }
 
 const handleCreateTimer = () => {
-  let newTimer = createEmptyTimer()
-  newTimer.id = oIndexes.value.length
+  let newTimer = createEmptyDexieTimer()
 
-  pushTo(newTimer)
-
-  handleTimerEditStarted(newTimer)
+  timerDatabase.timers.add(newTimer).then((_x: number) => {
+    pushTo(newTimer as ITimer)
+    handleTimerEditStarted(newTimer as ITimer)
+  }).catch(console.error)
 }
 
 const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
     toggleTimers(true, -1)
-    oIndexes.value.forEach(x => {
+    getIndexesFromPredicate(_x => true).forEach(x => {
       oStyleUPD[x].value = false
     })
 }
@@ -109,10 +134,19 @@ const showEditModal = computed(() => {
 })
 
 const getIndexList = computed(() => {
-  return oIndexes.value.filter(function (value, index) {
-    let theObject = {value, index}
-    return !oTimerDeleted.value[theObject.index]
+  return getIndexesFromPredicate(x => !oTimerDeleted.value[x.index])
+})
+
+//====================
+
+watch(firstInit, async () => {
+  if (!firstInit.value) return
+  
+  await timerDatabase.timers.orderBy("id").each((x: IDexieTimer) => {
+    pushTo(x as ITimer)
   })
+
+  firstInit.value = false
 })
 
 //====================
@@ -122,6 +156,8 @@ onMounted(() => {
     modalWindow.value.addEventListener("hide.bs.modal", () => { processResetTimers() })  
 
     modalWindowObject = new Modal(modalWindow.value)
+
+    firstInit.value = true
   }
 })
 </script>
