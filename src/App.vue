@@ -2,9 +2,22 @@
 import { Ref, onMounted, ref, computed, watch } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { ITimer, createEmptyTimer } from './types/ITimer'
+import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
-import dexie from './database'
+import { timerDatabase } from './database'
+
+//====================
+
+interface IIndexId {
+  value: number,
+  index: number
+}
+
+interface IPredicate {
+    (indexId: IIndexId): boolean
+}
+
+//====================
 
 let oTimers: ITimer[] = []
 let oDisabled: Ref<boolean>[] = []
@@ -35,11 +48,11 @@ const pushTo: (timer: ITimer) => void = timer => {
   oTimerDeleted.value.push(false)
 }
 
-const getIndexFromId = id => {
+const getIndexFromId: (id: number) => number = id => {
   return getIndexesFromPredicate(x => x.value === id)[0]
 }
 
-const getIndexesFromPredicate = predicate => {
+const getIndexesFromPredicate: (predicate: IPredicate) => number[] = predicate => {
   return oIndexes.value.map((value, index) => ({value, index})).filter(predicate).map(x => x.index)
 }
 
@@ -87,22 +100,21 @@ const handleTimerEditStarted = (timer: ITimer) => {
 
 const handleTimerDeleted = (timer: ITimer) => {
   oTimerDeleted.value[getIndexFromId(timer.id)] = true
-  dexie.timers.delete(timer.id)
+  timerDatabase.timers.delete(timer.id)
 }
 
 const handleModalclosed = () => {
   oShowTimer[editIndex.value].value = true
-  dexie.timers.put(oTimers[editIndex.value])
+  timerDatabase.timers.put(oTimers[editIndex.value])
   editIndex.value = -1
 }
 
 const handleCreateTimer = () => {
-  let newTimer = createEmptyTimer()
-  delete newTimer["id"]
+  let newTimer = createEmptyDexieTimer()
 
-  dexie.timers.add(newTimer).then(timer => {
-    pushTo(newTimer)
-    handleTimerEditStarted(newTimer)
+  timerDatabase.timers.add(newTimer).then((_x: number) => {
+    pushTo(newTimer as ITimer)
+    handleTimerEditStarted(newTimer as ITimer)
   }).catch(console.error)
 }
 
@@ -110,7 +122,7 @@ const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
     toggleTimers(true, -1)
-    getIndexesFromPredicate(x => true).forEach(x => {
+    getIndexesFromPredicate(_x => true).forEach(x => {
       oStyleUPD[x].value = false
     })
 }
@@ -130,8 +142,8 @@ const getIndexList = computed(() => {
 watch(firstInit, async () => {
   if (!firstInit.value) return
   
-  let timers = await dexie.timers.orderBy("id").each(x => {
-    pushTo(x)
+  await timerDatabase.timers.orderBy("id").each((x: IDexieTimer) => {
+    pushTo(x as ITimer)
   })
 
   firstInit.value = false
