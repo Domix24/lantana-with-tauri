@@ -35,7 +35,7 @@ const pushTo: (timer: ITimer) => void = timer => {
 }
 
 const getIndexFromId = id => {
-  getIndexesFromPredicate(x => x.value === id)
+  return getIndexesFromPredicate(x => x.value === id)[0]
 }
 
 const getIndexesFromPredicate = predicate => {
@@ -43,15 +43,15 @@ const getIndexesFromPredicate = predicate => {
 }
 
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
-  oIndexes.value.filter(x => x != timerId).forEach(x => {
+  getIndexesFromPredicate(x => x.value != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
     oDisabled[x].value = !active
   })
 }
 
 const handleTimerStarted = (timer: ITimer) => {
-  oTimerDisabledA[timer.id].value = false
-  oDisabled[timer.id].value = false
+  oTimerDisabledA[getIndexFromId(timer.id)].value = false
+  oDisabled[getIndexFromId(timer.id)].value = false
   toggleTimers(false, timer.id)
 }
 
@@ -59,17 +59,17 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   if (finished) {
     let elapsed = 0
 
-    modalContent.value.innerHTML = document.getElementById(oIds[timer.id])?.outerHTML + ""
+    modalContent.value.innerHTML = document.getElementById(oIds[getIndexFromId(timer.id)])?.outerHTML + ""
     modalContent.value.firstElementChild?.classList.remove("d-none")
     modalWindowObject.show()
 
     interval = setInterval(() => {
       if (elapsed % 2 === 0) {
         document.title = "**** TIMER ENDED ****"
-        oStyleUPD[timer.id].value = true
+        oStyleUPD[getIndexFromId(timer.id)].value = true
       } else if (elapsed % 2 === 1) {
         document.title = "**** " + String(timer.hour).padStart(2, "0") + ":" + String(timer.minute).padStart(2, "0") + ":" + String(timer.second).padStart(2, "0") + " ****"
-        oStyleUPD[timer.id].value = false
+        oStyleUPD[getIndexFromId(timer.id)].value = false
       }
 
       elapsed = (elapsed + 1) % 2
@@ -108,7 +108,7 @@ const processResetTimers = () => {
     clearInterval(interval)
     document.title = "Lantana 🌼"
     toggleTimers(true, -1)
-    oIndexes.value.forEach(x => {
+    getIndexesFromPredicate(x => true).forEach(x => {
       oStyleUPD[x].value = false
     })
 }
