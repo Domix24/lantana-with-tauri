@@ -34,6 +34,14 @@ const pushTo: (timer: ITimer) => void = timer => {
   oTimerDeleted.value.push(false)
 }
 
+const getIndexFromId = id => {
+  getIndexesFromPredicate(x => x.value === id)
+}
+
+const getIndexesFromPredicate = predicate => {
+  return oIndexes.value.map((value, index) => ({value, index})).filter(predicate).map(x => x.index)
+}
+
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
   oIndexes.value.filter(x => x != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
@@ -112,7 +120,7 @@ const showEditModal = computed(() => {
 })
 
 const getIndexList = computed(() => {
-  return oIndexes.value.map((value, index) => ({value, index})).filter(x => !oTimerDeleted.value[x.index]).map(x => x.index)
+  return getIndexesFromPredicate(x => !oTimerDeleted.value[x.index])
 })
 
 const testSomething = ref([])
