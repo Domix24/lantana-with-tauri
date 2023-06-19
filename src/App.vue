@@ -20,6 +20,7 @@ const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
+const firstInit: Ref<boolean> = ref(false)
 
 //====================
 
@@ -123,11 +124,16 @@ const getIndexList = computed(() => {
   return getIndexesFromPredicate(x => !oTimerDeleted.value[x.index])
 })
 
-const testSomething = ref([])
-const newValue = ref(false)
-watch(newValue, async () => {
-  testSomething.value = await dexie.timers.toArray()
-  newValue.value = false
+//====================
+
+watch(firstInit, async () => {
+  if (!firstInit.value) return
+  
+  let timers = await dexie.timers.orderBy("id").each(x => {
+    pushTo(x)
+  })
+
+  firstInit.value = false
 })
 
 //====================
@@ -138,7 +144,7 @@ onMounted(() => {
 
     modalWindowObject = new Modal(modalWindow.value)
 
-    newValue.value = true
+    firstInit.value = true
   }
 })
 </script>
@@ -173,13 +179,6 @@ onMounted(() => {
         </div>
         <div class="modal-body" ref="modalContent">
         </div>
-      </div>
-    </div>
-  </div>
-  <div class="px-4 py-4 my-5">
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <div class="col" v-for="something in testSomething">
-        <li>{{something}}</li>
       </div>
     </div>
   </div>
