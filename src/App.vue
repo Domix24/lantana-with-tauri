@@ -29,6 +29,7 @@ let oIds: string[] = []
 let interval: NodeJS.Timer
 let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
+let titleInterval: NodeJS.Timer
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
@@ -56,6 +57,33 @@ const getIndexesFromPredicate: (predicate: IPredicate) => number[] = predicate =
   return oIndexes.value.map((value, index) => ({value, index})).filter(predicate).map(x => x.index)
 }
 
+const startTitleLoop = () => {
+  let x = 0
+  titleInterval = setInterval(() => {
+    updateTitle(x)
+    x = ++x % 4
+  }, 1000)
+}
+
+const stopTitleLoop = () => {
+  clearInterval(titleInterval)
+  resetTitle()
+}
+
+const updateTitle = (index: number) => {
+  let begin = "🕛"
+  if (false) {}
+  else if (index === 1) { begin = "🕒" }
+  else if (index === 2) { begin = "🕕" }
+  else if (index === 3) { begin = "🕘" }
+
+  document.title = begin + " Lantana 🌼"
+}
+
+const resetTitle = () => {
+  document.title = "Lantana 🌼"
+}
+
 const toggleTimers: (active: boolean, timerId: number) => void = (active, timerId) => {
   getIndexesFromPredicate(x => x.value != timerId).forEach(x => {
     oTimerDisabledA[x].value = !active
@@ -67,6 +95,7 @@ const handleTimerStarted = (timer: ITimer) => {
   oTimerDisabledA[getIndexFromId(timer.id)].value = false
   oDisabled[getIndexFromId(timer.id)].value = false
   toggleTimers(false, timer.id)
+  startTitleLoop()
 }
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
@@ -91,6 +120,7 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
   } else {
     toggleTimers(true, timer.id)
   }
+  stopTitleLoop()
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
@@ -120,7 +150,7 @@ const handleCreateTimer = () => {
 
 const processResetTimers = () => {
     clearInterval(interval)
-    document.title = "Lantana 🌼"
+    resetTitle()
     toggleTimers(true, -1)
     getIndexesFromPredicate(_x => true).forEach(x => {
       oStyleUPD[x].value = false
