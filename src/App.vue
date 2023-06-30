@@ -17,6 +17,10 @@ interface IPredicate {
     (indexId: IIndexId): boolean
 }
 
+interface IGroupObject {
+  handleCreate: () => void
+}
+
 //====================
 
 let oTimers: ITimer[] = []
@@ -30,6 +34,7 @@ let interval: NodeJS.Timer
 let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
 let titleInterval: NodeJS.Timer
+let group: IGroupObject
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
@@ -157,6 +162,25 @@ const processResetTimers = () => {
     })
 }
 
+group = {
+  handleCreate: () => {
+    const notifyMe = () => {
+      if (!("Notification" in window)) {
+        alert("Something not working")
+      } else if (window.Notification.permission === "granted") {
+        new window.Notification("title", { body: "the-body" })
+      } else if (window.Notification.permission !== "denied") {
+        window.Notification.requestPermission().then(value => {
+          if (value === "granted") {
+            new window.Notification("title", { body: "the-body" })
+          }
+        })
+      }
+    }
+    setTimeout(notifyMe, 10000)
+  }
+}
+
 //====================
 
 const showEditModal = computed(() => {
@@ -200,7 +224,8 @@ onMounted(() => {
       <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">List of <em>Timers</em></p>
         <div class="gap-2 justify-content-sm-center d-grid d-sm-flex">
-          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="handleCreateTimer">Add new</button>
+          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="handleCreateTimer">Add new <em>Timer</em></button>
+          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="group.handleCreate">Add new <em>Group</em></button>
         </div>
       </div>
     </div>
