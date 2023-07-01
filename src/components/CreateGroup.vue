@@ -60,34 +60,37 @@ onMounted(() => {
           </div>
           <div class="modal-body">
             <form class="row g-3 needs-validation" novalidate ref="formElement">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col" class="col-9">Timer</th>
-                            <th scope="col" class="col-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(_timer, index) in group.timers">
-                            <td class="align-middle col-9">
-                                <select class="form-select" aria-label="Default select example" required>
-                                    <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
-                                </select>
-                            </td>
-                            <td class="align-middle col-3">
-                                <div style="justify-content: center;" class="d-flex gap-1">
-                                    <button type="button" class="btn btn-secondary px-2" @click="add(index)">+</button>
-                                    <button type="button" class="btn btn-danger px-2" @click="remove(index)">-</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="group.timers.length === 0">
-                            <td colspan="2">
-                                <button type="button" class="btn btn-secondary px-2" @click="add(0)">+</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+              <div class="col-12 position-relative">
+                <label for="validationCustom01" class="form-label">Title</label>
+                <input type="text" class="form-control" id="validationCustom01" required v-model="group.title">
+                <div class="invalid-tooltip">Looks not good!</div>
+              </div>
+              <div class="col-12 position-relative" v-if="group.timers.length === 0">
+                <button type="button" class="btn btn-secondary" @click="add(0)">Add new <em>Timer</em></button>
+              </div>
+              <table class="table table-striped" v-else>
+                <thead>
+                  <tr>
+                    <th scope="col" class="col-9">Timer</th>
+                    <th scope="col" class="col-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(_timer, index) in group.timers">
+                    <td class="align-middle col-9">
+                      <select class="form-select" aria-label="Default select example" required>
+                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
+                      </select>
+                    </td>
+                    <td class="align-middle col-3">
+                      <div style="justify-content: center;" class="d-flex gap-1">
+                        <button type="button" class="btn btn-secondary px-2" @click="add(index)">+</button>
+                        <button type="button" class="btn btn-danger px-2" @click="remove(index)">-</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </form>
           </div>
           <div class="modal-footer">
