@@ -6,23 +6,22 @@ import { ITimer } from '../types/ITimer';
 import { IGroup } from '../types/IGroup';
 
 let modalWindowObject: Modal
-const group: Ref<IGroup> = ref({ active: false, id: 10, timers: [], title: "a title" } as IGroup)
 const timers: Ref<ITimer[]> = ref([])
 const modalWindow: Ref<HTMLDivElement> = ref({} as HTMLDivElement)
 const formElement: Ref<HTMLFormElement> = ref({} as HTMLFormElement)
 const submitElement: Ref<HTMLButtonElement> = ref({} as HTMLButtonElement)
 
-//const props = defineProps<{ modelValue: IGroup }>()
-const emits = defineEmits<{(event: 'update:modelValue', group: IGroup): void, (event: 'closed'): void}>()
+const props = defineProps<{ group: IGroup }>()
+const emits = defineEmits<{(event: 'update:group', group: IGroup): void, (event: 'closed'): void}>()
 
 //====================
 
 const add: (index: number) => void = index => {
-  group.value.timers.push(index)
+  props.group.timers.push(index)
 }
 
 const remove: (index: number) => void = index => {
-  group.value.timers.splice(index, 1)
+  props.group.timers.splice(index, 1)
 }
 
 //====================
@@ -78,7 +77,7 @@ onMounted(() => {
                 <tbody>
                   <tr v-for="(_timer, index) in group.timers">
                     <td class="align-middle col-9">
-                      <select class="form-select" aria-label="Default select example" required>
+                      <select class="form-select" required v-model="group.timers[index]">
                         <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
                       </select>
                     </td>

@@ -20,7 +20,8 @@ interface IPredicate {
 }
 
 interface IGroupObject {
-  handleCreate: () => void
+  handleCreate: () => void,
+  index: Ref<number>
 }
 
 //====================
@@ -43,7 +44,6 @@ const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
-const showGroupModal: Ref<boolean> = ref(false)
 
 //====================
 
@@ -148,7 +148,7 @@ const handleModalClosed = (type: string) => {
     timerDatabase.timers.put(oTimers[editIndex.value])
     editIndex.value = -1
   } else if (type === "group") {
-    showGroupModal.value = false
+    group.index.value = -1
   }
 }
 
@@ -172,14 +172,20 @@ const processResetTimers = () => {
 
 group = {
   handleCreate: () => {
-    showGroupModal.value = true
-  }
+    groups.value.push({ active: false, id: groups.value.length, title: "un tit", timers: [] })
+    group.index.value = groups.value.length - 1
+  },
+  index: ref(-1)
 }
 
 //====================
 
 const showEditModal = computed(() => {
   return editIndex.value > -1
+})
+
+const showGroupModal = computed(() => {
+  return group.index.value > -1
 })
 
 const getIndexList = computed(() => {
@@ -236,8 +242,8 @@ onMounted(() => {
     <div class="px-4 py-4 my-5">
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col" v-for="_group in groups">
-          <Group />
+        <div class="col" v-for="group in groups">
+          <p>{{ group.id }} - {{ group.title }} - {{ group.timers }}</p>
         </div>
       </div>
     </div>
@@ -255,5 +261,5 @@ onMounted(() => {
     </div>
   </div>
   <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalClosed('timer')" />
-  <CreateGroup v-if="showGroupModal" @closed="handleModalClosed('group')"  />
+  <CreateGroup v-model:group="groups[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')"  />
 </template>
