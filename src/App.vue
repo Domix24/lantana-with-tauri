@@ -5,6 +5,8 @@ import CreateTimer from './components/CreateTimer.vue'
 import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
 import { timerDatabase } from './database'
+import CreateGroup from './components/CreateGroup.vue'
+import { IGroup } from './types/IGroup';
 
 //====================
 
@@ -35,11 +37,13 @@ let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
 let titleInterval: NodeJS.Timer
 let group: IGroupObject
+const groups: Ref<IGroup[]> = ref([])
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
+const showGroupModal: Ref<boolean> = ref(false)
 
 //====================
 
@@ -138,10 +142,14 @@ const handleTimerDeleted = (timer: ITimer) => {
   timerDatabase.timers.delete(timer.id)
 }
 
-const handleModalclosed = () => {
-  oShowTimer[editIndex.value].value = true
-  timerDatabase.timers.put(oTimers[editIndex.value])
-  editIndex.value = -1
+const handleModalClosed = (type: string) => {
+  if (type === "timer") {
+    oShowTimer[editIndex.value].value = true
+    timerDatabase.timers.put(oTimers[editIndex.value])
+    editIndex.value = -1
+  } else if (type === "group") {
+    showGroupModal.value = false
+  }
 }
 
 const handleCreateTimer = () => {
@@ -164,20 +172,7 @@ const processResetTimers = () => {
 
 group = {
   handleCreate: () => {
-    const notifyMe = () => {
-      if (!("Notification" in window)) {
-        alert("Something not working")
-      } else if (window.Notification.permission === "granted") {
-        new window.Notification("title", { body: "the-body" })
-      } else if (window.Notification.permission !== "denied") {
-        window.Notification.requestPermission().then(value => {
-          if (value === "granted") {
-            new window.Notification("title", { body: "the-body" })
-          }
-        })
-      }
-    }
-    setTimeout(notifyMe, 10000)
+    showGroupModal.value = true
   }
 }
 
@@ -230,10 +225,19 @@ onMounted(() => {
       </div>
     </div>
     <div class="px-4 py-4 my-5">
+      <h1 class="display-5 fw-bold text-body-emphasis">Timers</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in getIndexList">
           <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
+        </div>
+      </div>
+    </div>
+    <div class="px-4 py-4 my-5">
+      <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" v-for="_group in groups">
+          <Group />
         </div>
       </div>
     </div>
@@ -250,5 +254,6 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalclosed" />
+  <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalClosed('timer')" />
+  <CreateGroup v-if="showGroupModal" @closed="handleModalClosed('group')"  />
 </template>
