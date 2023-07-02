@@ -2,7 +2,7 @@
 import { Modal } from 'bootstrap';
 import { Ref, onMounted, ref } from 'vue';
 import { timerDatabase } from '../database';
-import { ITimer } from '../types/ITimer';
+import { ITimer, createEmptyTimer } from '../types/ITimer'
 import { IGroup } from '../types/IGroup';
 
 let modalWindowObject: Modal
@@ -16,8 +16,8 @@ const emits = defineEmits<{(event: 'update:group', group: IGroup): void, (event:
 
 //====================
 
-const add: (index: number) => void = index => {
-  props.group.timers.push(index)
+const add: () => void = () => {
+  props.group.timers.push(createEmptyTimer())
 }
 
 const remove: (index: number) => void = index => {
@@ -69,7 +69,7 @@ onMounted(() => {
                 <div class="invalid-tooltip">Looks not good!</div>
               </div>
               <div class="col-12 position-relative" v-if="group.timers.length === 0">
-                <button type="button" class="btn btn-secondary" @click="add(0)">Add new <em>Timer</em></button>
+                <button type="button" class="btn btn-secondary" @click="add()">Add new <em>Timer</em></button>
               </div>
               <table class="table table-striped" v-else>
                 <thead>
@@ -82,12 +82,12 @@ onMounted(() => {
                   <tr v-for="(_timer, index) in group.timers">
                     <td class="align-middle col-9">
                       <select class="form-select" required v-model="group.timers[index]">
-                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
+                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer"></option>
                       </select>
                     </td>
                     <td class="align-middle col-3">
                       <div style="justify-content: center;" class="d-flex gap-1">
-                        <button type="button" class="btn btn-secondary px-2" @click="add(index)">+</button>
+                        <button type="button" class="btn btn-secondary px-2" @click="add()">+</button>
                         <button type="button" class="btn btn-danger px-2" @click="remove(index)">-</button>
                       </div>
                     </td>

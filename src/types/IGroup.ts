@@ -1,14 +1,16 @@
+import { ITimer } from "./ITimer"
+
 export interface IGroup {
   active: boolean,
   title: string,
   id: number,
-  timers: number[],
+  timers: ITimer[],
 }
   
 export interface IDexieGroup {
   active: boolean,
   title: string,
-  timers: number[],
+  timers: ITimer[],
 }
 
 interface IGroupCombined {
@@ -16,7 +18,7 @@ interface IGroupCombined {
   idexiegroup: IDexieGroup
 }
 
-const _hiddenCreateGroup: (active: boolean, id: number, timers: number[], title: string) => IGroupCombined = (active, id, timers, title) => ({
+const _hiddenCreateGroup: (active: boolean, id: number, timers: ITimer[], title: string) => IGroupCombined = (active, id, timers, title) => ({
   idexiegroup: {
     active,
     timers,
