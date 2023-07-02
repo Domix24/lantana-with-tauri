@@ -36,6 +36,10 @@ onMounted(() => {
       event.preventDefault()
       event.stopPropagation()
 
+      if (formElement.value.checkValidity()) {
+        modalWindowObject.hide()
+      }
+
       formElement.value.classList.add('was-validated')
     }
 
