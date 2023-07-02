@@ -199,7 +199,7 @@ watch(showResetDropdown, (val) => {
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
-            <p class="card-text custom-font">{{show(countdown.elapsed)}}</p>
+            <p class="card-text custom-font fs-2">{{show(countdown.elapsed)}}</p>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
                 <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
                 <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
@@ -219,7 +219,7 @@ watch(showResetDropdown, (val) => {
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
-            <p class="card-text custom-font">{{show(0)}}</p>
+            <p class="card-text custom-font fs-2">{{show(0)}}</p>
         </div>
     </div>
 </template>
