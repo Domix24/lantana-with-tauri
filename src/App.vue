@@ -7,6 +7,7 @@ import { Modal } from 'bootstrap'
 import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
 import { IGroup, createEmptyDexieGroup } from './types/IGroup';
+import Group from './components/Group.vue'
 
 //====================
 
@@ -254,7 +255,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="group in groups">
-          <p>{{ group.id }} - {{ group.title }} - {{ group.timers }}</p>
+          <Group :group="group" />
         </div>
       </div>
     </div>
