@@ -23,7 +23,8 @@ interface IPredicate {
 interface IGroupObject {
   handleCreate: () => void,
   index: Ref<number>,
-  getIndexFromId: (id: number) => number
+  getIndexFromId: (id: number) => number,
+  handleEdit: (group: IGroup) => void
 }
 
 //====================
@@ -183,7 +184,10 @@ group = {
   getIndexFromId: id => { 
     return groups.value.map((value, index) => ({ value, index })).filter(value => value.value.id === id).at(0)!.index
   },
-  index: ref(-1)
+  index: ref(-1),
+  handleEdit: xgroup => {
+    group.index.value = group.getIndexFromId(xgroup.id)
+  }
 }
 
 //====================
@@ -254,8 +258,8 @@ onMounted(() => {
     <div class="px-4 py-4 my-5">
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col" v-for="group in groups">
-          <Group :group="group" />
+        <div class="col" v-for="xgroup in groups">
+          <Group :group="xgroup" @edit="group.handleEdit(xgroup)"  />
         </div>
       </div>
     </div>
