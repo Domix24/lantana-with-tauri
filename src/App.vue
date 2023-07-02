@@ -4,9 +4,9 @@ import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
 import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
-import { timerDatabase } from './database'
+import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
-import { IGroup } from './types/IGroup';
+import { IGroup, createEmptyDexieGroup } from './types/IGroup';
 
 //====================
 
@@ -21,7 +21,8 @@ interface IPredicate {
 
 interface IGroupObject {
   handleCreate: () => void,
-  index: Ref<number>
+  index: Ref<number>,
+  getIndexFromId: (id: number) => number
 }
 
 //====================
@@ -172,8 +173,14 @@ const processResetTimers = () => {
 
 group = {
   handleCreate: () => {
-    groups.value.push({ active: false, id: groups.value.length, title: "un tit", timers: [] })
-    group.index.value = groups.value.length - 1
+    let newGroup = createEmptyDexieGroup()
+    groupDatabase.groups.add(newGroup).then(id => {
+      groups.value.push(newGroup as IGroup)
+      group.index.value = group.getIndexFromId(id)
+    }).catch(console.error)
+  },
+  getIndexFromId: id => { 
+    return groups.value.map((value, index) => ({ value, index })).filter(value => value.value.id === id).at(0)!.index
   },
   index: ref(-1)
 }
@@ -199,6 +206,10 @@ watch(firstInit, async () => {
   
   await timerDatabase.timers.orderBy("id").each((x: IDexieTimer) => {
     pushTo(x as ITimer)
+  })
+
+  await groupDatabase.groups.orderBy("id").each(group => {
+    groups.value.push(group as IGroup)
   })
 
   firstInit.value = false
@@ -261,5 +272,5 @@ onMounted(() => {
     </div>
   </div>
   <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalClosed('timer')" />
-  <CreateGroup v-model:group="groups[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')"  />
+  <CreateGroup v-model:group="groups[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')" />
 </template>
