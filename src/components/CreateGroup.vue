@@ -12,7 +12,7 @@ const formElement: Ref<HTMLFormElement> = ref({} as HTMLFormElement)
 const submitElement: Ref<HTMLButtonElement> = ref({} as HTMLButtonElement)
 
 const props = defineProps<{ group: IGroup }>()
-const emits = defineEmits<{(event: 'update:group', group: IGroup): void, (event: 'closed'): void}>()
+const emits = defineEmits<{(event: 'update:group', group: IGroup): void, (event: 'closed'): void, (event: 'deleted', id: number): void}>()
 
 //====================
 
@@ -22,6 +22,11 @@ const add: () => void = () => {
 
 const remove: (index: number) => void = index => {
   props.group.timers.splice(index, 1)
+}
+
+const handleDelete: () => void = () => {
+  modalWindowObject.hide()
+  emits("deleted", props.group.id)
 }
 
 //====================
@@ -97,6 +102,7 @@ onMounted(() => {
             </form>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-danger" @click="handleDelete">Delete</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-primary" ref="submitElement">Save</button>
           </div>

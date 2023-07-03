@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, computed, watch } from 'vue';
+import { Ref, onMounted, ref, computed, watch, ComputedRef } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
 import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
@@ -24,7 +24,12 @@ interface IGroupObject {
   handleCreate: () => void,
   index: Ref<number>,
   getIndexFromId: (id: number) => number,
-  handleEdit: (group: IGroup) => void
+  handleEdit: (group: IGroup) => void,
+  handleDelete: (id: number) => void,
+  getGroups: ComputedRef<IGroup[]>
+  delete: Ref<boolean[]>,
+  list: Ref<IGroup[]>,
+  pushTo: (group: IGroup) => void
 }
 
 //====================
@@ -41,7 +46,6 @@ let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
 let titleInterval: NodeJS.Timer
 let group: IGroupObject
-const groups: Ref<IGroup[]> = ref([])
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
@@ -177,17 +181,33 @@ group = {
   handleCreate: () => {
     let newGroup = createEmptyDexieGroup()
     groupDatabase.groups.add(newGroup).then(id => {
-      groups.value.push(newGroup as IGroup)
+      group.pushTo(newGroup as IGroup)
       group.index.value = group.getIndexFromId(id)
-    }).catch(console.error)
+    })
   },
   getIndexFromId: id => { 
-    return groups.value.map((value, index) => ({ value, index })).filter(value => value.value.id === id).at(0)!.index
+    return group.list.value.map((value, index) => ({ value, index })).filter(x => x.value.id === id).at(0)!.index
   },
-  index: ref(-1),
   handleEdit: xgroup => {
     group.index.value = group.getIndexFromId(xgroup.id)
-  }
+  },
+  handleDelete: id => {
+    const index = group.getIndexFromId(id)
+    groupDatabase.groups.delete(group.list.value[index].id).then(_value => {
+      group.delete.value[index] = true
+      group.index.value = -1
+    })
+  },
+  pushTo: xgroup => {
+    group.list.value.push(xgroup)
+    group.delete.value.push(false)
+  },
+  getGroups: computed(() => {
+    return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index]).map(x => x.value)
+  }),
+  index: ref(-1),
+  delete: ref([]),
+  list: ref([]),
 }
 
 //====================
@@ -213,8 +233,8 @@ watch(firstInit, async () => {
     pushTo(x as ITimer)
   })
 
-  await groupDatabase.groups.orderBy("id").each(group => {
-    groups.value.push(group as IGroup)
+  await groupDatabase.groups.orderBy("id").each(xgroup => {
+    group.pushTo(xgroup as IGroup)
   })
 
   firstInit.value = false
@@ -258,7 +278,7 @@ onMounted(() => {
     <div class="px-4 py-4 my-5">
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div class="col" v-for="xgroup in groups">
+        <div class="col" v-for="xgroup in group.getGroups.value">
           <Group :group="xgroup" @edit="group.handleEdit(xgroup)"  />
         </div>
       </div>
@@ -277,5 +297,5 @@ onMounted(() => {
     </div>
   </div>
   <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalClosed('timer')" />
-  <CreateGroup v-model:group="groups[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')" />
+  <CreateGroup v-model:group="group.list.value[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')" @deleted="group.handleDelete" />
 </template>
