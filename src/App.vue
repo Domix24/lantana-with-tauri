@@ -31,6 +31,8 @@ interface IGroupObject {
   list: Ref<IGroup[]>,
   pushTo: (group: IGroup) => void,
   anotherlist: IGroup[],
+  visible: Ref<boolean>,
+  reloadTable: () => void
 }
 
 //====================
@@ -143,11 +145,15 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
 const handleTimerEditStarted = (timer: ITimer) => {
   editIndex.value = getIndexFromId(timer.id)
   oShowTimer[editIndex.value].value = false
+  group.visible.value = false
 }
 
 const handleTimerDeleted = (timer: ITimer) => {
   oTimerDeleted.value[getIndexFromId(timer.id)] = true
   timerDatabase.timers.delete(timer.id)
+  groupDatabase.groups.toArray().then(dexieGroups => {
+    groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers.includes(timer.id)).filter(x => x.timers = x.timers.filter(y => y != timer.id))).then(_x => group.reloadTable())
+  })
 }
 
 const handleModalClosed = (type: string) => {
@@ -155,6 +161,7 @@ const handleModalClosed = (type: string) => {
     oShowTimer[editIndex.value].value = true
     timerDatabase.timers.put(oTimers[editIndex.value])
     editIndex.value = -1
+    group.visible.value = true
   } else if (type === "group") {
     groupDatabase.groups.put(group.anotherlist[group.index.value])
     group.index.value = -1
@@ -208,10 +215,19 @@ group = {
   getGroups: computed(() => {
     return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index]).map(x => x.value)
   }),
+  reloadTable: () => {
+    group.list.value = []
+    group.anotherlist = []
+    group.delete.value = [] 
+    groupDatabase.groups.orderBy("id").each(xgroup => {
+      group.pushTo(xgroup as IGroup)
+    })
+  },
   index: ref(-1),
   delete: ref([]),
   list: ref([]),
-  anotherlist: [], 
+  anotherlist: [],
+  visible: ref(true)
 }
 
 //====================
@@ -237,9 +253,7 @@ watch(firstInit, async () => {
     pushTo(x as ITimer)
   })
 
-  await groupDatabase.groups.orderBy("id").each(xgroup => {
-    group.pushTo(xgroup as IGroup)
-  })
+  group.reloadTable()
 
   firstInit.value = false
 })
@@ -279,7 +293,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="px-4 py-4 my-5">
+    <div class="px-4 py-4 my-5" v-if="group.visible.value">
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="xgroup in group.getGroups.value">

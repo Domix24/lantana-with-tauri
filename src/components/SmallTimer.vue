@@ -12,7 +12,10 @@ watch(() => props.timerid, async () => {
 })
 
 onMounted(async () => {
-    timer.value = await timerDatabase.timers.get(props.timerid) as ITimer
+    let result = await timerDatabase.timers.get(props.timerid)
+    if (result) {
+        timer.value = result as ITimer
+    }  
 })
 </script>
 
