@@ -32,7 +32,9 @@ interface IGroupObject {
   pushTo: (group: IGroup) => void,
   anotherlist: IGroup[],
   visible: Ref<boolean>,
-  reloadTable: () => void
+  reloadTable: () => void,
+  handleStart: (group: IGroup) => void,
+  handleStop: (group: IGroup) => void,
 }
 
 //====================
@@ -223,6 +225,12 @@ group = {
       group.pushTo(xgroup as IGroup)
     })
   },
+  handleStart: xgroup => {
+    alert("start")
+  },
+  handleStop: xgroup => {
+    alert("stop")
+  },
   index: ref(-1),
   delete: ref([]),
   list: ref([]),
@@ -297,7 +305,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="xgroup in group.getGroups.value">
-          <Group :group="xgroup" @edit="group.handleEdit(xgroup)" />
+          <Group :group="xgroup" @edit="group.handleEdit(xgroup)" @start="group.handleStart" @stop="group.handleStop" />
         </div>
       </div>
     </div>
