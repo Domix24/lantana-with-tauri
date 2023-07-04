@@ -2,7 +2,7 @@
 import { Modal } from 'bootstrap';
 import { Ref, onMounted, ref } from 'vue';
 import { timerDatabase } from '../database';
-import { ITimer, createEmptyTimer } from '../types/ITimer'
+import { ITimer } from '../types/ITimer'
 import { IGroup } from '../types/IGroup';
 
 let modalWindowObject: Modal
@@ -16,12 +16,12 @@ const emits = defineEmits<{(event: 'update:group', group: IGroup): void, (event:
 
 //====================
 
-const add: () => void = () => {
-  props.group.timers.push(createEmptyTimer())
-}
-
 const remove: (index: number) => void = index => {
   props.group.timers.splice(index, 1)
+}
+
+const handleAdd: () => void = () => {
+  props.group.timers.push(timers.value[0].id)
 }
 
 const handleDelete: () => void = () => {
@@ -110,10 +110,10 @@ onMounted(() => {
                 <input type="text" class="form-control" id="validationCustom01" required v-model="group.title">
                 <div class="invalid-tooltip">Looks not good!</div>
               </div>
-              <div class="col-12 position-relative" v-if="group.timers.length === 0">
-                <button type="button" class="btn btn-secondary" @click="add()">Add new <em>Timer</em></button>
+              <div class="col-12 position-relative" v-if="timers.length > 0">
+                <button type="button" class="btn btn-secondary" @click="handleAdd()">Add new <em>Timer</em></button>
               </div>
-              <table class="table table-striped" v-else>
+              <table class="table table-striped" v-if="group.timers.length">
                 <thead>
                   <tr>
                     <th scope="col" class="col-9">Timer</th>
@@ -124,12 +124,11 @@ onMounted(() => {
                   <tr v-for="(_timer, index) in group.timers">
                     <td class="align-middle col-9">
                       <select class="form-select" required v-model="group.timers[index]">
-                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer"></option>
+                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
                       </select>
                     </td>
                     <td class="align-middle col-3">
                       <div style="justify-content: center;" class="d-flex gap-1">
-                        <button type="button" class="btn btn-secondary px-2" @click="add()">+</button>
                         <button type="button" class="btn btn-danger px-2" @click="remove(index)">-</button>
                         <button type="button" :class="'btn btn-primary px-2' + (showArrow(index).down ? '' : ' invisible')" @click="swap(index).down">↡</button>
                         <button type="button" :class="'btn btn-primary px-2' + (showArrow(index).up ? '' : ' invisible')" @click="swap(index).up">↟</button>

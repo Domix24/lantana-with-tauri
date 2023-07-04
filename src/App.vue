@@ -29,7 +29,8 @@ interface IGroupObject {
   getGroups: ComputedRef<IGroup[]>
   delete: Ref<boolean[]>,
   list: Ref<IGroup[]>,
-  pushTo: (group: IGroup) => void
+  pushTo: (group: IGroup) => void,
+  anotherlist: IGroup[],
 }
 
 //====================
@@ -155,6 +156,7 @@ const handleModalClosed = (type: string) => {
     timerDatabase.timers.put(oTimers[editIndex.value])
     editIndex.value = -1
   } else if (type === "group") {
+    groupDatabase.groups.put(group.anotherlist[group.index.value])
     group.index.value = -1
   }
 }
@@ -201,6 +203,7 @@ group = {
   pushTo: xgroup => {
     group.list.value.push(xgroup)
     group.delete.value.push(false)
+    group.anotherlist.push(xgroup)
   },
   getGroups: computed(() => {
     return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index]).map(x => x.value)
@@ -208,6 +211,7 @@ group = {
   index: ref(-1),
   delete: ref([]),
   list: ref([]),
+  anotherlist: [], 
 }
 
 //====================
@@ -279,7 +283,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="xgroup in group.getGroups.value">
-          <Group :group="xgroup" @edit="group.handleEdit(xgroup)"  />
+          <Group :group="xgroup" @edit="group.handleEdit(xgroup)" />
         </div>
       </div>
     </div>

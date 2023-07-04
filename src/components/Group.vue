@@ -11,7 +11,7 @@ defineEmits<{(event: 'edit', group: IGroup): void}>()
         <div class="card-header">{{ group.title }}</div>
         <div class="card-body">
             <div class="list-group my-2">
-                <SmallTimer v-for="timer in group.timers" :timer="timer" />
+                <SmallTimer v-for="timer in group.timers" :timerid="timer" />
             </div>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
                 <a class="btn btn-success">Start</a>
