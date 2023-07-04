@@ -31,6 +31,43 @@ const handleDelete: () => void = () => {
 
 //====================
 
+interface IUpDown1 {
+  up: boolean,
+  down: boolean
+}
+
+const showArrow: (index: number) => IUpDown1 = index => ({
+  down: index + 1 < props.group.timers.length,
+  up: index > 0
+})
+
+//====================
+
+interface IUpDown2 {
+  up: () => void,
+  down: () => void
+}
+
+const swap: (index: number) => IUpDown2 = index => {
+  const theswap = (index0: number, index1: number) => {
+    const oldvalue = props.group.timers[index0]
+
+    props.group.timers[index0] = props.group.timers[index1]
+    props.group.timers[index1] = oldvalue
+  }
+
+  return {
+    down: () => {
+      theswap(index, index + 1)
+    },
+    up: () => {
+      theswap(index, index - 1)
+    }
+  }
+}
+
+//====================
+
 onMounted(() => {
     modalWindow.value.addEventListener("hide.bs.modal", () => { emits("closed") })
 
@@ -94,6 +131,8 @@ onMounted(() => {
                       <div style="justify-content: center;" class="d-flex gap-1">
                         <button type="button" class="btn btn-secondary px-2" @click="add()">+</button>
                         <button type="button" class="btn btn-danger px-2" @click="remove(index)">-</button>
+                        <button type="button" :class="'btn btn-primary px-2' + (showArrow(index).down ? '' : ' invisible')" @click="swap(index).down">↡</button>
+                        <button type="button" :class="'btn btn-primary px-2' + (showArrow(index).up ? '' : ' invisible')" @click="swap(index).up">↟</button>
                       </div>
                     </td>
                   </tr>
