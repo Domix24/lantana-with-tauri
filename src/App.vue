@@ -38,7 +38,8 @@ interface IGroupObject {
   current: {
     group: IGroup | undefined
     index: number
-  }
+  },
+  activetimerid: Ref<number[]>,
 }
 
 //====================
@@ -239,6 +240,7 @@ group = {
     group.list.value.push(xgroup)
     group.delete.value.push(false)
     group.anotherlist.push(xgroup)
+    group.activetimerid.value.push(-1)
   },
   getGroups: computed(() => {
     return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index]).map(x => x.value)
@@ -246,7 +248,8 @@ group = {
   reloadTable: () => {
     group.list.value = []
     group.anotherlist = []
-    group.delete.value = [] 
+    group.delete.value = []
+    group.activetimerid.value = []
     groupDatabase.groups.orderBy("id").each(xgroup => {
       group.pushTo(xgroup as IGroup)
     })
@@ -255,6 +258,7 @@ group = {
     if (!group.current.group) {
       group.current.index = 0
       group.current.group = xgroup
+      group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index
     } 
     sendAction("start", getIndexFromId(xgroup.timers[group.current.index]))
   },
@@ -269,7 +273,8 @@ group = {
   current: {
     group: undefined,
     index: 0
-  } 
+  },
+  activetimerid: ref([]),
 }
 
 //====================
@@ -309,6 +314,7 @@ onMounted(() => {
 
       if (group.current.group) {
         group.current.index = (group.current.index + 1) % group.current.group.timers.length
+        group.activetimerid.value[getIndexFromId(group.current.group.id)] = group.current.index
         sendAction("reset-origin-start", getIndexFromId(group.current.group.timers[group.current.index]))
       }
     })  
@@ -346,7 +352,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="xgroup in group.getGroups.value">
-          <Group :group="xgroup" @edit="group.handleEdit(xgroup)" @start="group.handleStart" @stop="group.handleStop" />
+          <Group :group="xgroup" :activetimerid="group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index  " @edit="group.handleEdit(xgroup)" @start="group.handleStart" @stop="group.handleStop" />
         </div>
       </div>
     </div>

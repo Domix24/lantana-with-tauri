@@ -5,6 +5,7 @@ import SmallTimer from './SmallTimer.vue';
 
 interface IProps {
     group: IGroup,
+    activetimerid: number
 }
 
 type IEvents = "edit" | "stop" | "start"
@@ -33,10 +34,10 @@ const sendEvent = (event: IEvents, group: IGroup) => {
 
 <template>
     <div class="card">
-        <div class="card-header">{{ group.title }}</div>
+        <div class="card-header">{{ group.title }} - {{ activetimerid }}</div>
         <div class="card-body">
             <div class="list-group my-2">
-                <SmallTimer v-for="timer in group.timers" :timerid="timer" />
+                <SmallTimer v-for="timer, index in group.timers" :timerid="timer" :active="index === activetimerid" />
             </div>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
                 <a class="btn btn-success" @click="sendEvent('start', group)" v-if="state === 'stopped'" >Start</a>

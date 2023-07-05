@@ -5,7 +5,7 @@ import { timerDatabase } from '../database';
 
 const timer: Ref<ITimer> = ref(createEmptyTimer())
 const pad: (number: number) => string = number => String(number).padStart(2, "0")
-const props = defineProps<{ timerid: number }>()
+const props = defineProps<{ timerid: number, active: boolean }>()
 
 watch(() => props.timerid, async () => {
     timer.value = await timerDatabase.timers.get(props.timerid) as ITimer
@@ -15,12 +15,12 @@ onMounted(async () => {
     let result = await timerDatabase.timers.get(props.timerid)
     if (result) {
         timer.value = result as ITimer
-    }  
+    }
 })
 </script>
 
 <template>
-    <a class="list-group-item">
+    <a :class="'list-group-item' + (active ? ' active' : '')">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ timer.title }}</h5>
             <small>#{{ timerid }}</small>
