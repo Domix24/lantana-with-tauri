@@ -29,12 +29,13 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string }>(), {
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string, timerStatus?: number }>(), {
     object: () => createEmptyTimer(),
     disabled: false,
     styleUpdated: false,
     timerDisabled: false,
-    idText: "-"
+    idText: "-",
+    timerStatus: 0,
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void, (event: 'timerDeleted', timer: ITimer): void}>()
 
@@ -190,6 +191,22 @@ const showDeleteButton = computed(() => {
 watch(showResetDropdown, (val) => {
     if (theDropdown.value && !val && theDropdown.value["classList"].contains("show")) {
         theDropdown.value["classList"].toggle("show")
+    }
+})
+
+watch(() => littleTest.timerStatus, (value) => {
+    if ((value === 1 || value === 2) && showStartButton.value && !appendDisabled.value.length) { // "start"
+        startTimer()
+    } else if ((value === 3 || value === 4) && countdown.active && !appendDisabled.value.length) { // "stop"
+        stopTimer()
+    } else if ((value === 5 || value === 6) && showResetButton.value && !appendDisabled.value.length) { // "reset-origin"
+        resetTimerOriginal()
+    } else if ((value === 7 || value === 8) && showResetDropdownButton.value && showUpdatedReset.value && !appendDisabled.value.length) { // "reset-normal"
+        resetTimerBack()
+    } else if ((value === 9 || value === 10) && showResetDropdownButton.value && !appendDisabled.value.length) { // "reset-progressive"
+        resetTimerIncrement()
+    } else {
+        
     }
 })
 </script>

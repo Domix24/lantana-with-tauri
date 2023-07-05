@@ -56,6 +56,7 @@ const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
+const timerAction: Ref<number[]> = ref([])
 
 //====================
 
@@ -68,6 +69,7 @@ const pushTo: (timer: ITimer) => void = timer => {
   oShowTimer.push(ref(true))
   oIds.push("timerid" + timer.id)
   oTimerDeleted.value.push(false)
+  timerAction.value.push(0)
 }
 
 const getIndexFromId: (id: number) => number = id => {
@@ -188,6 +190,20 @@ const processResetTimers = () => {
     })
 }
 
+const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive", index: number) => {
+  if (type === "start") {
+    timerAction.value[index] = timerAction.value[index] === 1 ? 2 : 1
+  } else if (type === "stop") {
+    timerAction.value[index] = timerAction.value[index] === 3 ? 4 : 3
+  } else if (type === "reset-origin") {
+    timerAction.value[index] = timerAction.value[index] === 5 ? 6 : 5
+  } else if (type === "reset-normal") {
+    timerAction.value[index] = timerAction.value[index] === 7 ? 8 : 7
+  } else if (type === "reset-progressive") {
+    timerAction.value[index] = timerAction.value[index] === 9 ? 10 : 9
+  }
+}
+
 group = {
   handleCreate: () => {
     let newGroup = createEmptyDexieGroup()
@@ -226,10 +242,10 @@ group = {
     })
   },
   handleStart: xgroup => {
-    alert("start")
+    sendAction("start", getIndexFromId(xgroup.timers[0]))
   },
   handleStop: xgroup => {
-    alert("stop")
+    sendAction("stop", getIndexFromId(xgroup.timers[0]))
   },
   index: ref(-1),
   delete: ref([]),
@@ -296,7 +312,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Timers</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in getIndexList">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
         </div>
       </div>

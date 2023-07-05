@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { IGroup } from '../types/IGroup'
 import SmallTimer from './SmallTimer.vue';
 
@@ -6,14 +7,28 @@ interface IProps {
     group: IGroup,
 }
 
+type IEvents = "edit" | "stop" | "start"
+
 interface IEmits {
-    (event: "edit", group: IGroup): void,
-    (event: "stop", group: IGroup): void,
-    (event: "start", group: IGroup): void,
+    (event: IEvents, group: IGroup): void,
 }
 
 defineProps<IProps>()
-defineEmits<IEmits>()
+const emits = defineEmits<IEmits>()
+
+const state = ref("stopped" as ("stopped" | "started"))
+
+const sendEvent = (event: IEvents, group: IGroup) => {
+    if (event === "edit") {
+
+    } else if (event === "start") {
+        state.value = "started"
+    } else if (event === "stop") {
+        state.value = "stopped"
+    }
+
+    emits(event, group)
+}
 </script>
 
 <template>
@@ -24,9 +39,9 @@ defineEmits<IEmits>()
                 <SmallTimer v-for="timer in group.timers" :timerid="timer" />
             </div>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
-                <a class="btn btn-success" @click="$emit('start', group)" >Start</a>
-                <a class="btn btn-danger" @click="$emit('stop', group)" >Stop</a>
-                <a class="btn btn-warning" @click="$emit('edit', group)" >Edit</a>
+                <a class="btn btn-success" @click="sendEvent('start', group)" v-if="state === 'stopped'" >Start</a>
+                <a class="btn btn-danger" @click="sendEvent('stop', group)" v-if="state === 'started'" >Stop</a>
+                <a class="btn btn-warning" @click="sendEvent('edit', group)" v-if="state === 'stopped'" >Edit</a>
             </div>
         </div>
     </div>
