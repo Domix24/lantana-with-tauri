@@ -5,10 +5,11 @@ import SmallTimer from './SmallTimer.vue';
 
 interface IProps {
     group: IGroup,
-    activetimerid: number
+    activetimerid: number,
+    active: number
 }
 
-type IEvents = "edit" | "stop" | "start"
+type IEvents = "edit" | "stop" | "start" | "reset"
 
 interface IEmits {
     (event: IEvents, group: IGroup): void,
@@ -19,14 +20,29 @@ const emits = defineEmits<IEmits>()
 
 const state = ref("stopped" as ("stopped" | "started"))
 
+const showEditButton = ref(true)
+const showResetButton = ref(true)
+const showStartButton = ref(true)
+const showStopButton = ref(false)
+
 const sendEvent = (event: IEvents, group: IGroup) => {
     if (event === "edit") {
 
     } else if (event === "start") {
+        showEditButton.value = false
+        showResetButton.value = false
+        showStartButton.value = false
+        showStopButton.value = true
         state.value = "started"
     } else if (event === "stop") {
+        showEditButton.value = true
+        showResetButton.value = true
+        showStartButton.value = true
+        showStopButton.value = false
         state.value = "stopped"
-    }
+    } else if (event === "reset") {
+
+    } 
 
     emits(event, group)
 }
@@ -34,15 +50,16 @@ const sendEvent = (event: IEvents, group: IGroup) => {
 
 <template>
     <div class="card">
-        <div class="card-header">{{ group.title }} - {{ activetimerid }}</div>
+        <div class="card-header">{{ group.title }}</div>
         <div class="card-body">
             <div class="list-group my-2">
                 <SmallTimer v-for="timer, index in group.timers" :timerid="timer" :active="index === activetimerid" />
             </div>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
-                <a class="btn btn-success" @click="sendEvent('start', group)" v-if="state === 'stopped'" >Start</a>
-                <a class="btn btn-danger" @click="sendEvent('stop', group)" v-if="state === 'started'" >Stop</a>
-                <a class="btn btn-warning" @click="sendEvent('edit', group)" v-if="state === 'stopped'" >Edit</a>
+                <a :class="'btn btn-success' + (active === 0 ? '' : ' disabled')" @click="sendEvent('start', group)" v-if="showStartButton">Start</a>
+                <a :class="'btn btn-danger' + (active === 0 ? '' : ' disabled')" @click="sendEvent('stop', group)" v-if="showStopButton">Stop</a>
+                <a :class="'btn btn-primary' + (active === 0 ? '' : ' disabled')" @click="sendEvent('reset', group)" v-if="showResetButton">Reset</a>
+                <a :class="'btn btn-warning' + (active === 0 ? '' : ' disabled')" @click="sendEvent('edit', group)" v-if="showEditButton">Edit</a>
             </div>
         </div>
     </div>

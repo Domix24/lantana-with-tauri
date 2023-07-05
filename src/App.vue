@@ -26,20 +26,22 @@ interface IGroupObject {
   getIndexFromId: (id: number) => number,
   handleEdit: (group: IGroup) => void,
   handleDelete: (id: number) => void,
-  getGroups: ComputedRef<IGroup[]>
+  getGroups: ComputedRef<{ value: IGroup, index: number }[]>
   delete: Ref<boolean[]>,
   list: Ref<IGroup[]>,
   pushTo: (group: IGroup) => void,
   anotherlist: IGroup[],
   visible: Ref<boolean>,
   reloadTable: () => void,
-  handleStart: (group: IGroup) => void,
-  handleStop: (group: IGroup) => void,
+  handleStart: (group: IGroup, index: number) => void,
+  handleStop: (group: IGroup, index: number) => void,
   current: {
     group: IGroup | undefined
     index: number
   },
   activetimerid: Ref<number[]>,
+  handleReset: (group: IGroup, index: number) => void,
+  active: Ref<number[]>
 }
 
 //====================
@@ -241,29 +243,44 @@ group = {
     group.delete.value.push(false)
     group.anotherlist.push(xgroup)
     group.activetimerid.value.push(-1)
+    group.active.value.push(0)
   },
   getGroups: computed(() => {
-    return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index]).map(x => x.value)
+    return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index])
   }),
   reloadTable: () => {
     group.list.value = []
     group.anotherlist = []
     group.delete.value = []
     group.activetimerid.value = []
+    group.active.value = [] 
     groupDatabase.groups.orderBy("id").each(xgroup => {
       group.pushTo(xgroup as IGroup)
     })
   },
-  handleStart: xgroup => {
-    if (!group.current.group) {
+  handleStart: (xgroup, xindex) => {
+    if (!group.current.group || group.current.group.id !== xgroup.id) {
       group.current.index = 0
       group.current.group = xgroup
       group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index
     } 
     sendAction("start", getIndexFromId(xgroup.timers[group.current.index]))
+    group.active.value.forEach((_, i, a) => {
+      a[i] = i === xindex ? 0 : 1
+    })
   },
   handleStop: xgroup => {
     sendAction("stop", getIndexFromId(xgroup.timers[group.current.index]))
+    group.active.value.forEach((_, i, a) => {
+      a[i] = 0
+    })
+  },
+  handleReset: xgroup => {
+    xgroup.timers.forEach(x => {
+      sendAction("reset-origin", getIndexFromId(x))
+    })
+    group.current.group = undefined
+    group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
   },
   index: ref(-1),
   delete: ref([]),
@@ -272,9 +289,10 @@ group = {
   visible: ref(true),
   current: {
     group: undefined,
-    index: 0
+    index: -1
   },
   activetimerid: ref([]),
+  active: ref([])
 }
 
 //====================
@@ -352,7 +370,14 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="xgroup in group.getGroups.value">
-          <Group :group="xgroup" :activetimerid="group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index  " @edit="group.handleEdit(xgroup)" @start="group.handleStart" @stop="group.handleStop" />
+          <Group
+            :group="xgroup.value"
+            :activetimerid="((group.current.group && group.current.group.id === xgroup.value.id) ? group.activetimerid.value[getIndexFromId(xgroup.value.id)] : -1)"
+            :active="group.active.value[xgroup.index]"
+            @edit="group.handleEdit"
+            @start="group.handleStart(xgroup.value, xgroup.index)"
+            @stop="group.handleStop(xgroup.value, xgroup.index)"
+            @reset="group.handleReset(xgroup.value, xgroup.index)" />
         </div>
       </div>
     </div>
