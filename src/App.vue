@@ -355,7 +355,12 @@ onMounted(() => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Timer Finished</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            <span>Timer Finished</span>
+            <template v-if="group.current.group">
+              <small>&nbsp;{{ group.current.group.title }}</small>
+            </template>
+          </h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" ref="modalContent">
