@@ -195,18 +195,24 @@ watch(showResetDropdown, (val) => {
 })
 
 watch(() => littleTest.timerStatus, (value) => {
-    if ((value === 1 || value === 2) && showStartButton.value && !appendDisabled.value.length) { // "start"
+    if ((value === 10 || value === 11) && showStartButton.value && !appendDisabled.value.length) { // "start"
         startTimer()
-    } else if ((value === 3 || value === 4) && countdown.active && !appendDisabled.value.length) { // "stop"
+    } else if ((value === 12 || value === 13) && countdown.active && !appendDisabled.value.length) { // "stop"
         stopTimer()
-    } else if ((value === 5 || value === 6) && showResetButton.value && !appendDisabled.value.length) { // "reset-origin"
+    } else if ((value === 14 || value === 15 || value === 20 || value === 21) && showResetButton.value && !appendDisabled.value.length) { // "reset-origin(-start)"
         resetTimerOriginal()
-    } else if ((value === 7 || value === 8) && showResetDropdownButton.value && showUpdatedReset.value && !appendDisabled.value.length) { // "reset-normal"
+        if (value === 20 || value === 21)
+            startTimer()
+    } else if ((value === 16 || value === 17 || value === 22 || value === 23) && showResetDropdownButton.value && showUpdatedReset.value && !appendDisabled.value.length) { // "reset-normal(-start)"
         resetTimerBack()
-    } else if ((value === 9 || value === 10) && showResetDropdownButton.value && !appendDisabled.value.length) { // "reset-progressive"
+        if (value === 22 || value === 23)
+            startTimer()
+    } else if ((value === 18 || value === 19 || value === 24 || value === 25) && showResetDropdownButton.value && !appendDisabled.value.length) { // "reset-progressive(-start)"
         resetTimerIncrement()
+        if (value === 24 || value === 25)
+            startTimer()
     } else {
-        
+
     }
 })
 </script>

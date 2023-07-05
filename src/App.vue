@@ -35,6 +35,10 @@ interface IGroupObject {
   reloadTable: () => void,
   handleStart: (group: IGroup) => void,
   handleStop: (group: IGroup) => void,
+  current: {
+    group: IGroup | undefined
+    index: number
+  }
 }
 
 //====================
@@ -190,17 +194,23 @@ const processResetTimers = () => {
     })
 }
 
-const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive", index: number) => {
+const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start", index: number) => {
   if (type === "start") {
-    timerAction.value[index] = timerAction.value[index] === 1 ? 2 : 1
+    timerAction.value[index] = timerAction.value[index] === 10 ? 11 : 10
   } else if (type === "stop") {
-    timerAction.value[index] = timerAction.value[index] === 3 ? 4 : 3
+    timerAction.value[index] = timerAction.value[index] === 12 ? 13 : 12
   } else if (type === "reset-origin") {
-    timerAction.value[index] = timerAction.value[index] === 5 ? 6 : 5
+    timerAction.value[index] = timerAction.value[index] === 14 ? 15 : 14
   } else if (type === "reset-normal") {
-    timerAction.value[index] = timerAction.value[index] === 7 ? 8 : 7
+    timerAction.value[index] = timerAction.value[index] === 16 ? 17 : 16
   } else if (type === "reset-progressive") {
-    timerAction.value[index] = timerAction.value[index] === 9 ? 10 : 9
+    timerAction.value[index] = timerAction.value[index] === 18 ? 19 : 18
+  } else if (type === "reset-origin-start") {
+    timerAction.value[index] = timerAction.value[index] === 20 ? 21 : 20
+  } else if (type === "reset-normal-start") {
+    timerAction.value[index] = timerAction.value[index] === 22 ? 23 : 22
+  } else if (type === "reset-progressive-start") {
+    timerAction.value[index] = timerAction.value[index] === 24 ? 25 : 24
   }
 }
 
@@ -242,16 +252,24 @@ group = {
     })
   },
   handleStart: xgroup => {
-    sendAction("start", getIndexFromId(xgroup.timers[0]))
+    if (!group.current.group) {
+      group.current.index = 0
+      group.current.group = xgroup
+    } 
+    sendAction("start", getIndexFromId(xgroup.timers[group.current.index]))
   },
   handleStop: xgroup => {
-    sendAction("stop", getIndexFromId(xgroup.timers[0]))
+    sendAction("stop", getIndexFromId(xgroup.timers[group.current.index]))
   },
   index: ref(-1),
   delete: ref([]),
   list: ref([]),
   anotherlist: [],
-  visible: ref(true)
+  visible: ref(true),
+  current: {
+    group: undefined,
+    index: 0
+  } 
 }
 
 //====================
@@ -286,7 +304,14 @@ watch(firstInit, async () => {
 
 onMounted(() => {
   if (modalWindow.value) {
-    modalWindow.value.addEventListener("hide.bs.modal", () => { processResetTimers() })  
+    modalWindow.value.addEventListener("hide.bs.modal", () => {
+      processResetTimers()
+
+      if (group.current.group) {
+        group.current.index = (group.current.index + 1) % group.current.group.timers.length
+        sendAction("reset-origin-start", getIndexFromId(group.current.group.timers[group.current.index]))
+      }
+    })  
 
     modalWindowObject = new Modal(modalWindow.value)
 
