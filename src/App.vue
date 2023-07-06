@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { Ref, onMounted, ref, computed, watch } from 'vue';
+import { Ref, onMounted, ref, computed, watch, ComputedRef } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
 import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
 import { Modal } from 'bootstrap'
-import { timerDatabase } from './database'
+import { groupDatabase, timerDatabase } from './database'
+import CreateGroup from './components/CreateGroup.vue'
+import { IGroup, createEmptyDexieGroup } from './types/IGroup';
+import Group from './components/Group.vue'
 
 //====================
 
@@ -15,6 +18,31 @@ interface IIndexId {
 
 interface IPredicate {
     (indexId: IIndexId): boolean
+}
+
+interface IGroupObject {
+  handleCreate: () => void,
+  index: Ref<number>,
+  getIndexFromId: (id: number) => number,
+  handleEdit: (group: IGroup) => void,
+  handleDelete: (id: number) => void,
+  getGroups: ComputedRef<{ value: IGroup, index: number }[]>
+  delete: Ref<boolean[]>,
+  list: Ref<IGroup[]>,
+  pushTo: (group: IGroup) => void,
+  anotherlist: IGroup[],
+  visible: Ref<boolean>,
+  reloadTable: () => void,
+  handleStart: (group: IGroup, index: number) => void,
+  handleStop: (group: IGroup, index: number) => void,
+  current: {
+    group: IGroup | undefined
+    index: number
+  },
+  activetimerid: Ref<number[]>,
+  handleReset: (group: IGroup, index: number) => void,
+  active: Ref<number[]>,
+  button: Ref<boolean>
 }
 
 //====================
@@ -30,11 +58,14 @@ let interval: NodeJS.Timer
 let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
 let titleInterval: NodeJS.Timer
+let group: IGroupObject
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)
 const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
+const timerAction: Ref<number[]> = ref([])
+const activateButton: Ref<boolean> = ref(true)
 
 //====================
 
@@ -47,6 +78,7 @@ const pushTo: (timer: ITimer) => void = timer => {
   oShowTimer.push(ref(true))
   oIds.push("timerid" + timer.id)
   oTimerDeleted.value.push(false)
+  timerAction.value.push(0)
 }
 
 const getIndexFromId: (id: number) => number = id => {
@@ -96,6 +128,9 @@ const handleTimerStarted = (timer: ITimer) => {
   oDisabled[getIndexFromId(timer.id)].value = false
   toggleTimers(false, timer.id)
   startTitleLoop()
+  if (activateButton.value) {
+    group.button.value = false
+  }
 }
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
@@ -121,22 +156,33 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
     toggleTimers(true, timer.id)
   }
   stopTitleLoop()
+  group.button.value = true
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
   editIndex.value = getIndexFromId(timer.id)
   oShowTimer[editIndex.value].value = false
+  group.visible.value = false
 }
 
 const handleTimerDeleted = (timer: ITimer) => {
   oTimerDeleted.value[getIndexFromId(timer.id)] = true
   timerDatabase.timers.delete(timer.id)
+  groupDatabase.groups.toArray().then(dexieGroups => {
+    groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers.includes(timer.id)).filter(x => x.timers = x.timers.filter(y => y != timer.id))).then(_x => group.reloadTable())
+  })
 }
 
-const handleModalclosed = () => {
-  oShowTimer[editIndex.value].value = true
-  timerDatabase.timers.put(oTimers[editIndex.value])
-  editIndex.value = -1
+const handleModalClosed = (type: string) => {
+  if (type === "timer") {
+    oShowTimer[editIndex.value].value = true
+    timerDatabase.timers.put(oTimers[editIndex.value])
+    editIndex.value = -1
+    group.visible.value = true
+  } else if (type === "group") {
+    groupDatabase.groups.put(group.anotherlist[group.index.value])
+    group.index.value = -1
+  }
 }
 
 const handleCreateTimer = () => {
@@ -157,10 +203,115 @@ const processResetTimers = () => {
     })
 }
 
+const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start", index: number) => {
+  if (type === "start") {
+    timerAction.value[index] = timerAction.value[index] === 10 ? 11 : 10
+  } else if (type === "stop") {
+    timerAction.value[index] = timerAction.value[index] === 12 ? 13 : 12
+  } else if (type === "reset-origin") {
+    timerAction.value[index] = timerAction.value[index] === 14 ? 15 : 14
+  } else if (type === "reset-normal") {
+    timerAction.value[index] = timerAction.value[index] === 16 ? 17 : 16
+  } else if (type === "reset-progressive") {
+    timerAction.value[index] = timerAction.value[index] === 18 ? 19 : 18
+  } else if (type === "reset-origin-start") {
+    timerAction.value[index] = timerAction.value[index] === 20 ? 21 : 20
+  } else if (type === "reset-normal-start") {
+    timerAction.value[index] = timerAction.value[index] === 22 ? 23 : 22
+  } else if (type === "reset-progressive-start") {
+    timerAction.value[index] = timerAction.value[index] === 24 ? 25 : 24
+  }
+}
+
+group = {
+  handleCreate: () => {
+    let newGroup = createEmptyDexieGroup()
+    groupDatabase.groups.add(newGroup).then(id => {
+      group.pushTo(newGroup as IGroup)
+      group.index.value = group.getIndexFromId(id)
+    })
+  },
+  getIndexFromId: id => { 
+    return group.list.value.map((value, index) => ({ value, index })).filter(x => x.value.id === id).at(0)!.index
+  },
+  handleEdit: xgroup => {
+    group.index.value = group.getIndexFromId(xgroup.id)
+  },
+  handleDelete: id => {
+    const index = group.getIndexFromId(id)
+    groupDatabase.groups.delete(group.list.value[index].id).then(_value => {
+      group.delete.value[index] = true
+      group.index.value = -1
+    })
+  },
+  pushTo: xgroup => {
+    group.list.value.push(xgroup)
+    group.delete.value.push(false)
+    group.anotherlist.push(xgroup)
+    group.activetimerid.value.push(-1)
+    group.active.value.push(0)
+  },
+  getGroups: computed(() => {
+    return group.list.value.map((value, index) => ({ value, index })).filter(x => !group.delete.value[x.index])
+  }),
+  reloadTable: () => {
+    group.list.value = []
+    group.anotherlist = []
+    group.delete.value = []
+    group.activetimerid.value = []
+    group.active.value = [] 
+    groupDatabase.groups.orderBy("id").each(xgroup => {
+      group.pushTo(xgroup as IGroup)
+    })
+  },
+  handleStart: (xgroup, xindex) => {
+    if (!group.current.group || group.current.group.id !== xgroup.id) {
+      group.current.index = 0
+      group.current.group = xgroup
+      group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index
+    } 
+    sendAction("start", getIndexFromId(xgroup.timers[group.current.index]))
+    group.active.value.forEach((_, i, a) => {
+      a[i] = i === xindex ? 0 : 1
+    })
+    activateButton.value = false
+  },
+  handleStop: xgroup => {
+    sendAction("stop", getIndexFromId(xgroup.timers[group.current.index]))
+    group.active.value.forEach((_, i, a) => {
+      a[i] = 0
+    })
+  },
+  handleReset: xgroup => {
+    xgroup.timers.forEach(x => {
+      sendAction("reset-origin", getIndexFromId(x))
+    })
+    group.current.group = undefined
+    group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
+    activateButton.value = true
+  },
+  index: ref(-1),
+  delete: ref([]),
+  list: ref([]),
+  anotherlist: [],
+  visible: ref(true),
+  current: {
+    group: undefined,
+    index: -1
+  },
+  activetimerid: ref([]),
+  active: ref([]),
+  button: ref(true),
+}
+
 //====================
 
 const showEditModal = computed(() => {
   return editIndex.value > -1
+})
+
+const showGroupModal = computed(() => {
+  return group.index.value > -1
 })
 
 const getIndexList = computed(() => {
@@ -176,6 +327,8 @@ watch(firstInit, async () => {
     pushTo(x as ITimer)
   })
 
+  group.reloadTable()
+
   firstInit.value = false
 })
 
@@ -183,7 +336,15 @@ watch(firstInit, async () => {
 
 onMounted(() => {
   if (modalWindow.value) {
-    modalWindow.value.addEventListener("hide.bs.modal", () => { processResetTimers() })  
+    modalWindow.value.addEventListener("hide.bs.modal", () => {
+      processResetTimers()
+
+      if (group.current.group) {
+        group.current.index = (group.current.index + 1) % group.current.group.timers.length
+        group.activetimerid.value[getIndexFromId(group.current.group.id)] = group.current.index
+        sendAction("reset-origin-start", getIndexFromId(group.current.group.timers[group.current.index]))
+      }
+    })  
 
     modalWindowObject = new Modal(modalWindow.value)
 
@@ -200,15 +361,32 @@ onMounted(() => {
       <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">List of <em>Timers</em></p>
         <div class="gap-2 justify-content-sm-center d-grid d-sm-flex">
-          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="handleCreateTimer">Add new</button>
+          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="handleCreateTimer">Add new <em>Timer</em></button>
+          <button type="button" class="btn btn-primary btn-lg px-4 gap-3" @click="group.handleCreate">Add new <em>Group</em></button>
         </div>
       </div>
     </div>
     <div class="px-4 py-4 my-5">
+      <h1 class="display-5 fw-bold text-body-emphasis">Timers</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in getIndexList">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" :activate-button="activateButton" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
+        </div>
+      </div>
+    </div>
+    <div class="px-4 py-4 my-5" v-if="group.visible.value">
+      <h1 class="display-5 fw-bold text-body-emphasis">Groups</h1>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" v-for="xgroup in group.getGroups.value">
+          <Group
+            :group="xgroup.value"
+            :activetimerid="((group.current.group && group.current.group.id === xgroup.value.id) ? group.activetimerid.value[getIndexFromId(xgroup.value.id)] : -1)"
+            :active="!group.button.value ? 1 : group.active.value[xgroup.index]"
+            @edit="group.handleEdit"
+            @start="group.handleStart(xgroup.value, xgroup.index)"
+            @stop="group.handleStop(xgroup.value, xgroup.index)"
+            @reset="group.handleReset(xgroup.value, xgroup.index)" />
         </div>
       </div>
     </div>
@@ -217,7 +395,12 @@ onMounted(() => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Timer Finished</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            <span>Timer Finished</span>
+            <template v-if="group.current.group">
+              <small>&nbsp;{{ group.current.group.title }}</small>
+            </template>
+          </h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" ref="modalContent">
@@ -225,5 +408,6 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalclosed" />
+  <CreateTimer v-model="oTimers[editIndex]" v-if="showEditModal" @closed="handleModalClosed('timer')" />
+  <CreateGroup v-model:group="group.list.value[group.index.value]" v-if="showGroupModal" @closed="handleModalClosed('group')" @deleted="group.handleDelete" />
 </template>
