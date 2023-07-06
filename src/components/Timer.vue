@@ -29,12 +29,14 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string }>(), {
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string, timerStatus?: number, activateButton?: boolean }>(), {
     object: () => createEmptyTimer(),
     disabled: false,
     styleUpdated: false,
     timerDisabled: false,
-    idText: "-"
+    idText: "-",
+    timerStatus: 0,
+    activateButton: true
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void, (event: 'timerDeleted', timer: ITimer): void}>()
 
@@ -143,7 +145,7 @@ const cardBorder = computed(() => {
 })
 
 const appendDisabled = computed(() => {
-    if (littleTest.disabled) return "disabled"
+    if (littleTest.disabled) return " disabled"
     else return ""
 })
 
@@ -192,6 +194,28 @@ watch(showResetDropdown, (val) => {
         theDropdown.value["classList"].toggle("show")
     }
 })
+
+watch(() => littleTest.timerStatus, (value) => {
+    if ((value === 10 || value === 11) && showStartButton.value && !appendDisabled.value.length) { // "start"
+        startTimer()
+    } else if ((value === 12 || value === 13) && countdown.active && !appendDisabled.value.length) { // "stop"
+        stopTimer()
+    } else if ((value === 14 || value === 15 || value === 20 || value === 21) && showResetButton.value && !appendDisabled.value.length) { // "reset-origin(-start)"
+        resetTimerOriginal()
+        if (value === 20 || value === 21)
+            startTimer()
+    } else if ((value === 16 || value === 17 || value === 22 || value === 23) && showResetDropdownButton.value && showUpdatedReset.value && !appendDisabled.value.length) { // "reset-normal(-start)"
+        resetTimerBack()
+        if (value === 22 || value === 23)
+            startTimer()
+    } else if ((value === 18 || value === 19 || value === 24 || value === 25) && showResetDropdownButton.value && !appendDisabled.value.length) { // "reset-progressive(-start)"
+        resetTimerIncrement()
+        if (value === 24 || value === 25)
+            startTimer()
+    } else {
+
+    }
+})
 </script>
 
 <template>
@@ -199,19 +223,19 @@ watch(showResetDropdown, (val) => {
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
-            <p class="card-text custom-font">{{show(countdown.elapsed)}}</p>
+            <p class="card-text custom-font fs-2">{{show(countdown.elapsed)}}</p>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
-                <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
-                <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
-                <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimerOriginal" v-if="showResetButton">Reset</a>
-                <button class="btn btn-primary dropdown-toggle" :class="appendDisabled" type="button" data-bs-toggle="dropdown" aria-expanded="false" v-if="showResetDropdownButton">Reset</button>
+                <a :class="'btn btn-success' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="startTimer" v-if="showStartButton">Start</a>
+                <a :class="'btn btn-danger' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
+                <a :class="'btn btn-primary' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="resetTimerOriginal" v-if="showResetButton">Reset</a>
+                <button :class="'btn btn-primary dropdown-toggle' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" type="button" data-bs-toggle="dropdown" aria-expanded="false" v-if="showResetDropdownButton">Reset</button>
                 <ul class="dropdown-menu" ref="theDropdown">
                     <li><a class="dropdown-item" v-on:click="resetTimerOriginal">To {{show(originElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerBack" v-if="showUpdatedReset">To {{show(updatedElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerIncrement">To {{show(resetButtonText)}}</a></li>
                 </ul>
-                <a class="btn btn-warning" :class="appendDisabled" v-on:click="editTimer" v-if="showEditButton">Edit</a>
-                <a class="btn btn-danger" :class="appendDisabled" v-on:click="deleteTimer" v-if="showDeleteButton">Delete</a>
+                <a :class="'btn btn-warning' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="editTimer" v-if="showEditButton">Edit</a>
+                <a :class="'btn btn-danger' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="deleteTimer" v-if="showDeleteButton">Delete</a>
             </div>
         </div>
     </div>
@@ -219,7 +243,7 @@ watch(showResetDropdown, (val) => {
         <div class="card-header">{{object.title}}</div>
         <div class="card-body">
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
-            <p class="card-text custom-font">{{show(0)}}</p>
+            <p class="card-text custom-font fs-2">{{show(0)}}</p>
         </div>
     </div>
 </template>
