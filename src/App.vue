@@ -41,7 +41,8 @@ interface IGroupObject {
   },
   activetimerid: Ref<number[]>,
   handleReset: (group: IGroup, index: number) => void,
-  active: Ref<number[]>
+  active: Ref<number[]>,
+  button: Ref<boolean>
 }
 
 //====================
@@ -64,6 +65,7 @@ const editIndex: Ref<number> = ref(-1)
 const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
 const timerAction: Ref<number[]> = ref([])
+const activateButton: Ref<boolean> = ref(true)
 
 //====================
 
@@ -126,6 +128,9 @@ const handleTimerStarted = (timer: ITimer) => {
   oDisabled[getIndexFromId(timer.id)].value = false
   toggleTimers(false, timer.id)
   startTitleLoop()
+  if (activateButton.value) {
+    group.button.value = false
+  }
 }
 
 const handleTimerStopped = (timer: ITimer, finished: boolean) => {
@@ -151,6 +156,7 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
     toggleTimers(true, timer.id)
   }
   stopTitleLoop()
+  group.button.value = true
 }
 
 const handleTimerEditStarted = (timer: ITimer) => {
@@ -268,6 +274,7 @@ group = {
     group.active.value.forEach((_, i, a) => {
       a[i] = i === xindex ? 0 : 1
     })
+    activateButton.value = false
   },
   handleStop: xgroup => {
     sendAction("stop", getIndexFromId(xgroup.timers[group.current.index]))
@@ -281,6 +288,7 @@ group = {
     })
     group.current.group = undefined
     group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
+    activateButton.value = true
   },
   index: ref(-1),
   delete: ref([]),
@@ -292,7 +300,8 @@ group = {
     index: -1
   },
   activetimerid: ref([]),
-  active: ref([])
+  active: ref([]),
+  button: ref(true),
 }
 
 //====================
@@ -361,7 +370,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Timers</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in getIndexList">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
+          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" :activate-button="activateButton" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
         </div>
       </div>
@@ -373,7 +382,7 @@ onMounted(() => {
           <Group
             :group="xgroup.value"
             :activetimerid="((group.current.group && group.current.group.id === xgroup.value.id) ? group.activetimerid.value[getIndexFromId(xgroup.value.id)] : -1)"
-            :active="group.active.value[xgroup.index]"
+            :active="!group.button.value ? 1 : group.active.value[xgroup.index]"
             @edit="group.handleEdit"
             @start="group.handleStart(xgroup.value, xgroup.index)"
             @stop="group.handleStop(xgroup.value, xgroup.index)"

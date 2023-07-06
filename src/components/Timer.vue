@@ -29,13 +29,14 @@ interface IScheduled {
 
 let timerHandle: NodeJS.Timeout | undefined = undefined
 
-const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string, timerStatus?: number }>(), {
+const littleTest = withDefaults(defineProps<{ object?: ITimer, disabled: boolean, styleUpdated?: boolean, timerDisabled: boolean, idText?: string, timerStatus?: number, activateButton?: boolean }>(), {
     object: () => createEmptyTimer(),
     disabled: false,
     styleUpdated: false,
     timerDisabled: false,
     idText: "-",
     timerStatus: 0,
+    activateButton: true
 })
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void, (event: 'timerDeleted', timer: ITimer): void}>()
 
@@ -144,7 +145,7 @@ const cardBorder = computed(() => {
 })
 
 const appendDisabled = computed(() => {
-    if (littleTest.disabled) return "disabled"
+    if (littleTest.disabled) return " disabled"
     else return ""
 })
 
@@ -224,17 +225,17 @@ watch(() => littleTest.timerStatus, (value) => {
             <h5 class="card-title">{{format(scheduled.start)}} &Rarr; {{format(scheduled.end)}}</h5>
             <p class="card-text custom-font fs-2">{{show(countdown.elapsed)}}</p>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
-                <a class="btn btn-success" :class="appendDisabled" v-on:click="startTimer" v-if="showStartButton">Start</a>
-                <a class="btn btn-danger" :class="appendDisabled" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
-                <a class="btn btn-primary" :class="appendDisabled" v-on:click="resetTimerOriginal" v-if="showResetButton">Reset</a>
-                <button class="btn btn-primary dropdown-toggle" :class="appendDisabled" type="button" data-bs-toggle="dropdown" aria-expanded="false" v-if="showResetDropdownButton">Reset</button>
+                <a :class="'btn btn-success' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="startTimer" v-if="showStartButton">Start</a>
+                <a :class="'btn btn-danger' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="stopTimer" v-if="countdown.active">Stop</a>
+                <a :class="'btn btn-primary' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="resetTimerOriginal" v-if="showResetButton">Reset</a>
+                <button :class="'btn btn-primary dropdown-toggle' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" type="button" data-bs-toggle="dropdown" aria-expanded="false" v-if="showResetDropdownButton">Reset</button>
                 <ul class="dropdown-menu" ref="theDropdown">
                     <li><a class="dropdown-item" v-on:click="resetTimerOriginal">To {{show(originElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerBack" v-if="showUpdatedReset">To {{show(updatedElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerIncrement">To {{show(resetButtonText)}}</a></li>
                 </ul>
-                <a class="btn btn-warning" :class="appendDisabled" v-on:click="editTimer" v-if="showEditButton">Edit</a>
-                <a class="btn btn-danger" :class="appendDisabled" v-on:click="deleteTimer" v-if="showDeleteButton">Delete</a>
+                <a :class="'btn btn-warning' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="editTimer" v-if="showEditButton">Edit</a>
+                <a :class="'btn btn-danger' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="deleteTimer" v-if="showDeleteButton">Delete</a>
             </div>
         </div>
     </div>
