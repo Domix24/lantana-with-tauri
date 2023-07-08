@@ -2,11 +2,18 @@
 import { Modal } from 'bootstrap';
 import { Ref, onMounted, ref } from 'vue';
 import { timerDatabase } from '../database';
-import { ITimer } from '../types/ITimer'
+import { ITimer, ITimerIncrement } from '../types/ITimer'
 import { IGroup } from '../types/IGroup';
 
+type IReset = "Original" | "Normal" | "Progressive" | "Only"
+
+interface ITimerOption {
+  timer: ITimer,
+  reset: IReset,
+} 
+
 let modalWindowObject: Modal
-const timers: Ref<ITimer[]> = ref([])
+const timers: Ref<ITimerOption[]> = ref([])
 const modalWindow: Ref<HTMLDivElement> = ref({} as HTMLDivElement)
 const formElement: Ref<HTMLFormElement> = ref({} as HTMLFormElement)
 const submitElement: Ref<HTMLButtonElement> = ref({} as HTMLButtonElement)
@@ -21,13 +28,30 @@ const remove: (index: number) => void = index => {
 }
 
 const handleAdd: () => void = () => {
-  props.group.timers.push(timers.value[0].id)
+  props.group.timers.push(timers.value[0].timer.id+"")
 }
 
 const handleDelete: () => void = () => {
   modalWindowObject.hide()
   emits("deleted", props.group.id)
 }
+
+//====================
+
+const appendReset: (reset: IReset) => { label: (increment: ITimerIncrement) => string, value: string } = reset => ({
+  label: increment => {
+    if (reset === "Normal") return " - back to last"
+    else if (reset === "Only") return ""
+    else if (reset === "Original") return ""
+    else return ` - +${increment.increment}%`
+  },
+  value: (() => {
+    if (reset === "Normal") return "!"
+    else if (reset === "Only") return ""
+    else if (reset === "Original") return ""
+    else return "+"
+  })()
+})
 
 //====================
 
@@ -90,7 +114,13 @@ onMounted(() => {
     }
 
     timerDatabase.timers.orderBy("id").each(timer => {
-        timers.value.push(timer as ITimer)
+      if (timer.timerIncrement.active) {
+        timers.value.push({ timer: timer as ITimer, reset: "Original" })
+        timers.value.push({ timer: timer as ITimer, reset: "Normal" })
+        timers.value.push({ timer: timer as ITimer, reset: "Progressive" })
+      } else {
+        timers.value.push({ timer: timer as ITimer, reset: "Only" })  
+      } 
     })
 })
 </script>
@@ -124,7 +154,7 @@ onMounted(() => {
                   <tr v-for="(_timer, index) in group.timers">
                     <td class="align-middle col-9">
                       <select class="form-select" required v-model="group.timers[index]">
-                        <option v-for="timer in timers" :label="'#' + timer.id + ' (' + timer.title + ')'" :value="timer.id"></option>
+                        <option v-for="timer in timers" :label="timer.timer.title + appendReset(timer.reset).label(timer.timer.timerIncrement)" :value="timer.timer.id + '' + appendReset(timer.reset).value"></option>
                       </select>
                     </td>
                     <td class="align-middle col-3">

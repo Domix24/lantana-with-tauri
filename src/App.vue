@@ -8,6 +8,7 @@ import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
 import { IGroup, createEmptyDexieGroup } from './types/IGroup';
 import Group from './components/Group.vue'
+import { parseTimerId } from './functions';
 
 //====================
 
@@ -169,7 +170,7 @@ const handleTimerDeleted = (timer: ITimer) => {
   oTimerDeleted.value[getIndexFromId(timer.id)] = true
   timerDatabase.timers.delete(timer.id)
   groupDatabase.groups.toArray().then(dexieGroups => {
-    groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers.includes(timer.id)).filter(x => x.timers = x.timers.filter(y => y != timer.id))).then(_x => group.reloadTable())
+    groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers.map(y => parseTimerId(y).timerid).includes(timer.id)).filter(x => x.timers = x.timers.filter(y => parseTimerId(y).timerid != timer.id))).then(_x => group.reloadTable())
   })
 }
 
@@ -270,21 +271,21 @@ group = {
       group.current.group = xgroup
       group.activetimerid.value[getIndexFromId(xgroup.id)] = group.current.index
     } 
-    sendAction("start", getIndexFromId(xgroup.timers[group.current.index]))
+    sendAction("start", getIndexFromId(parseTimerId(xgroup.timers[group.current.index]).timerid))
     group.active.value.forEach((_, i, a) => {
       a[i] = i === xindex ? 0 : 1
     })
     activateButton.value = false
   },
   handleStop: xgroup => {
-    sendAction("stop", getIndexFromId(xgroup.timers[group.current.index]))
+    sendAction("stop", getIndexFromId(parseTimerId(xgroup.timers[group.current.index]).timerid))
     group.active.value.forEach((_, i, a) => {
       a[i] = 0
     })
   },
   handleReset: xgroup => {
     xgroup.timers.forEach(x => {
-      sendAction("reset-origin", getIndexFromId(x))
+      sendAction("reset-origin", getIndexFromId(parseTimerId(x).timerid))
     })
     group.current.group = undefined
     group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
@@ -342,7 +343,7 @@ onMounted(() => {
       if (group.current.group) {
         group.current.index = (group.current.index + 1) % group.current.group.timers.length
         group.activetimerid.value[getIndexFromId(group.current.group.id)] = group.current.index
-        sendAction("reset-origin-start", getIndexFromId(group.current.group.timers[group.current.index]))
+        sendAction("reset-origin-start", getIndexFromId(parseTimerId(group.current.group.timers[group.current.index]).timerid))
       }
     })  
 
