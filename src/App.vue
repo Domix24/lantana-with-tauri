@@ -48,6 +48,10 @@ interface IGroupObject {
 
 //====================
 
+type IAction = "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start"
+
+//====================
+
 let oTimers: ITimer[] = []
 let oDisabled: Ref<boolean>[] = []
 let oStyleUPD: Ref<boolean>[] = []
@@ -204,7 +208,7 @@ const processResetTimers = () => {
     })
 }
 
-const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start", index: number) => {
+const sendAction = (type: IAction, index: number) => {
   if (type === "start") {
     timerAction.value[index] = timerAction.value[index] === 10 ? 11 : 10
   } else if (type === "stop") {
@@ -221,6 +225,16 @@ const sendAction = (type: "start" | "stop" | "reset-origin" | "reset-normal" | "
     timerAction.value[index] = timerAction.value[index] === 22 ? 23 : 22
   } else if (type === "reset-progressive-start") {
     timerAction.value[index] = timerAction.value[index] === 24 ? 25 : 24
+  }
+}
+
+const convertToAction: (actions: IAction[]) => IAction | undefined = actions => {
+  if (actions.length === 2 && actions[0] === "reset-normal" && actions[1] === "start") {
+    return "reset-normal-start"
+  } else if (actions.length === 2 && actions[0] === "reset-origin" && actions[1] === "start") {
+    return "reset-origin-start"
+  } else if (actions.length === 2 && actions[0] === "reset-progressive" && actions[1] === "start") {
+    return "reset-progressive-start"
   }
 }
 
@@ -341,9 +355,30 @@ onMounted(() => {
       processResetTimers()
 
       if (group.current.group) {
+        // 1. Reset the active timer
+        const activeTimerId = parseTimerId(group.current.group.timers[group.current.index])
+        const actions: IAction[] = []
+        if (activeTimerId.resetNormal) {
+          actions.push("reset-normal")
+        } else if (activeTimerId.resetOrigin) {
+          actions.push("reset-origin")
+        } else if (activeTimerId.resetProgressive) {
+          actions.push("reset-progressive")
+        }
+
+        // 2. Start the next timer on the list
         group.current.index = (group.current.index + 1) % group.current.group.timers.length
-        group.activetimerid.value[getIndexFromId(group.current.group.id)] = group.current.index
-        sendAction("reset-origin-start", getIndexFromId(parseTimerId(group.current.group.timers[group.current.index]).timerid))
+
+        const nextTimerId = parseTimerId(group.current.group.timers[group.current.index])
+
+        // 3. Verify if we have the SAME id for both
+        if (nextTimerId.timerid === activeTimerId.timerid) {
+          actions.push("start")
+          sendAction(convertToAction(actions)!, getIndexFromId(activeTimerId.timerid))
+        } else {
+          sendAction(actions[0], getIndexFromId(activeTimerId.timerid))
+          sendAction("start", getIndexFromId(nextTimerId.timerid))
+        }
       }
     })  
 

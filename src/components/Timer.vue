@@ -200,7 +200,7 @@ watch(() => littleTest.timerStatus, (value) => {
         startTimer()
     } else if ((value === 12 || value === 13) && countdown.active && !appendDisabled.value.length) { // "stop"
         stopTimer()
-    } else if ((value === 14 || value === 15 || value === 20 || value === 21) && showResetButton.value && !appendDisabled.value.length) { // "reset-origin(-start)"
+    } else if ((value === 14 || value === 15 || value === 20 || value === 21) && (showResetButton.value || showResetDropdownButton.value) && !appendDisabled.value.length) { // "reset-origin(-start)"
         resetTimerOriginal()
         if (value === 20 || value === 21)
             startTimer()
@@ -213,7 +213,7 @@ watch(() => littleTest.timerStatus, (value) => {
         if (value === 24 || value === 25)
             startTimer()
     } else {
-
+        
     }
 })
 </script>
