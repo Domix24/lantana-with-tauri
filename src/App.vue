@@ -368,6 +368,7 @@ onMounted(() => {
 
         // 2. Start the next timer on the list
         group.current.index = (group.current.index + 1) % group.current.group.timers.length
+        group.activetimerid.value[getIndexFromId(group.current.group.id)] = group.current.index
 
         const nextTimerId = parseTimerId(group.current.group.timers[group.current.index])
 
