@@ -230,7 +230,7 @@ const sendAction = (type: IAction, index: number) => {
     timerAction.value[index] = timerAction.value[index] === 26 ? 27 : 26
   } else if (type === "reset-normal-reset-origin-start") {
     timerAction.value[index] = timerAction.value[index] === 28 ? 29 : 28
-  } 
+  }
 }
 
 const convertToAction: (actions: IAction[]) => IAction | undefined = actions => {
@@ -307,9 +307,11 @@ group = {
     })
   },
   handleReset: xgroup => {
+    let timerAction: number[] = []  
     xgroup.timers.forEach(x => {
-      sendAction("reset-origin", getIndexFromId(parseTimerId(x).timerid))
+      timerAction.push(getIndexFromId(parseTimerId(x).timerid))
     })
+    timerAction.filter((v, i, a) => a.indexOf(v) === i).forEach(v => sendAction("reset-origin", v))
     group.current.group = undefined
     group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
     activateButton.value = true

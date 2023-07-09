@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, Ref, onMounted } from 'vue'
-import { ITimer, createEmptyTimer } from '../types/ITimer'
+import { ITimer, createTimer } from '../types/ITimer'
 import { Modal } from 'bootstrap'
 
 let modalWindowObject: Modal
@@ -104,15 +104,7 @@ onMounted(() => {
       event.stopPropagation()
 
       if (formElement.value.checkValidity()) {
-        const updatedModel = createEmptyTimer()
-        updatedModel.id = props.modelValue.id
-        updatedModel.active = props.modelValue.active
-        updatedModel.minute = timerMinutes.value
-        updatedModel.hour = timerHours.value
-        updatedModel.second = timerSeconds.value
-        updatedModel.title = timerTitle.value
-        updatedModel.timerIncrement.active = timerActive.value
-        updatedModel.timerIncrement.increment = timerIncrement.value
+        const updatedModel = createTimer(props.modelValue.active, timerHours.value, props.modelValue.id, timerMinutes.value, timerSeconds.value, {active: timerActive.value, increment: timerIncrement.value}, timerTitle.value).Timer
 
         emits("update:modelValue", updatedModel)
         modalWindowObject.hide()
