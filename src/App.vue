@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed, watch, ComputedRef } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { IDexieTimer, ITimer, createEmptyDexieTimer } from './types/ITimer'
+import { IDexieTimer, ITimer, createEmptyDexieTimer, createTimer, timerToDB } from './types/ITimer'
 import { Modal } from 'bootstrap'
 import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
@@ -43,12 +43,13 @@ interface IGroupObject {
   activetimerid: Ref<number[]>,
   handleReset: (group: IGroup, index: number) => void,
   active: Ref<number[]>,
-  button: Ref<boolean>
+  button: Ref<boolean>,
+  hideTimerList: (groupid: number) => Ref<boolean>,
 }
 
 //====================
 
-type IAction = "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start"
+type IAction = "start" | "stop" | "reset-origin" | "reset-normal" | "reset-progressive" | "reset-normal-start" | "reset-origin-start" | "reset-progressive-start" | "reset-normal-reset-origin" | "reset-normal-reset-origin-start"
 
 //====================
 
@@ -75,7 +76,7 @@ const activateButton: Ref<boolean> = ref(true)
 //====================
 
 const pushTo: (timer: ITimer) => void = timer => {
-  oTimers.push(timer)
+  oTimers.push(createTimer(timer.active, timer.hour, timer.id, timer.minute, timer.second, timer.timerIncrement, timer.title).Timer)
   oIndexes.value.push(timer.id)
   oDisabled.push(ref(false))
   oStyleUPD.push(ref(false))
@@ -180,10 +181,38 @@ const handleTimerDeleted = (timer: ITimer) => {
 
 const handleModalClosed = (type: string) => {
   if (type === "timer") {
+    const theTimer = oTimers[editIndex.value]
+    const functions = {
+      type1: {
+        a: (y: {timerid: number, resetOnly: boolean}) => y.resetOnly && y.timerid == theTimer.id,
+        b: (y: string) => parseTimerId(y).timerid === theTimer.id && parseTimerId(y).resetOnly ? y + "*" : y
+      },
+      type2: {
+        a: (y: {timerid: number, resetOnly: boolean}) => !y.resetOnly && y.timerid == theTimer.id,
+        b: (y: string) => parseTimerId(y).timerid === theTimer.id && !parseTimerId(y).resetOnly ? parseTimerId(y).timerid + "" : y
+      }
+    }
+    let correctFunction = functions.type2
+
     oShowTimer[editIndex.value].value = true
-    timerDatabase.timers.put(oTimers[editIndex.value])
-    editIndex.value = -1
-    group.visible.value = true
+    timerDatabase.timers.put(timerToDB(oTimers[editIndex.value]))
+    if (oTimers[editIndex.value].timerIncrement.active) {
+      correctFunction = functions.type1
+    }
+    groupDatabase.groups.toArray().then(dexieGroups => {
+      groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers .map(y => parseTimerId(y))
+                                                                    .filter(correctFunction.a)
+                                                                    .length > 0)
+                                              .map(x => {
+                                                x.timers = x.timers.map(correctFunction.b)
+                                                return x
+                          }))
+                          .then(_ => {
+                            editIndex.value = -1
+                            group.reloadTable()
+                            group.visible.value = true
+                          })
+    }) 
   } else if (type === "group") {
     groupDatabase.groups.put(group.anotherlist[group.index.value])
     group.index.value = -1
@@ -225,6 +254,10 @@ const sendAction = (type: IAction, index: number) => {
     timerAction.value[index] = timerAction.value[index] === 22 ? 23 : 22
   } else if (type === "reset-progressive-start") {
     timerAction.value[index] = timerAction.value[index] === 24 ? 25 : 24
+  } else if (type === "reset-normal-reset-origin") {
+    timerAction.value[index] = timerAction.value[index] === 26 ? 27 : 26
+  } else if (type === "reset-normal-reset-origin-start") {
+    timerAction.value[index] = timerAction.value[index] === 28 ? 29 : 28
   }
 }
 
@@ -235,7 +268,11 @@ const convertToAction: (actions: IAction[]) => IAction | undefined = actions => 
     return "reset-origin-start"
   } else if (actions.length === 2 && actions[0] === "reset-progressive" && actions[1] === "start") {
     return "reset-progressive-start"
-  }
+  } else if (actions.length === 2 && actions[0] === "reset-normal" && actions[1] === "reset-origin") {
+    return "reset-normal-reset-origin"
+  } else if (actions.length === 3 && actions[0] === "reset-normal" && actions[1] === "reset-origin" && actions[2] === "start") {
+    return "reset-normal-reset-origin-start"
+  } 
 }
 
 group = {
@@ -298,12 +335,17 @@ group = {
     })
   },
   handleReset: xgroup => {
+    let timerAction: number[] = []  
     xgroup.timers.forEach(x => {
-      sendAction("reset-origin", getIndexFromId(parseTimerId(x).timerid))
+      timerAction.push(getIndexFromId(parseTimerId(x).timerid))
     })
+    timerAction.filter((v, i, a) => a.indexOf(v) === i).forEach(v => sendAction("reset-origin", v))
     group.current.group = undefined
     group.activetimerid.value[getIndexFromId(xgroup.id)] = -1
     activateButton.value = true
+  },
+  hideTimerList: groupid => {
+    return ref(group.index.value !== groupid)
   },
   index: ref(-1),
   delete: ref([]),
@@ -360,6 +402,9 @@ onMounted(() => {
         const actions: IAction[] = []
         if (activeTimerId.resetNormal) {
           actions.push("reset-normal")
+          actions.push("reset-origin")
+        } else if (activeTimerId.resetOnly) {
+          actions.push("reset-origin") 
         } else if (activeTimerId.resetOrigin) {
           actions.push("reset-origin")
         } else if (activeTimerId.resetProgressive) {
@@ -388,6 +433,11 @@ onMounted(() => {
     firstInit.value = true
   }
 })
+
+//====================
+
+//timers.value.push(createTimer(false, 0, 1, 0, 30, {active: false, increment: 0}, "First Timer").Timer)
+//timers.value.push(createTimer(false, 0, 1, 2, 0, {active: false, increment: 0}, "First Timer").Timer)
 </script>
 
 <template>
@@ -407,7 +457,7 @@ onMounted(() => {
       <h1 class="display-5 fw-bold text-body-emphasis">Timers</h1>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div class="col" v-for="index in getIndexList">
-          <Timer :object="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" :activate-button="activateButton" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
+          <Timer :timer="oTimers[index]" :disabled="oDisabled[index].value" :style-updated="oStyleUPD[index].value" :timer-disabled="oTimerDisabledA[index].value" :id-text="oIds[index]" :timer-status="timerAction[index]" :activate-button="activateButton" @timer-started="handleTimerStarted" @timer-stopped="handleTimerStopped" @timer-edit-started="handleTimerEditStarted" @timer-deleted="handleTimerDeleted" v-if="oShowTimer[index].value" />
           <Timer :disabled="valueTrue" :timer-disabled="valueTrue" v-else />
         </div>
       </div>
@@ -423,7 +473,11 @@ onMounted(() => {
             @edit="group.handleEdit"
             @start="group.handleStart(xgroup.value, xgroup.index)"
             @stop="group.handleStop(xgroup.value, xgroup.index)"
-            @reset="group.handleReset(xgroup.value, xgroup.index)" />
+            @reset="group.handleReset(xgroup.value, xgroup.index)">
+            <template #timers v-if="group.hideTimerList(xgroup.index).value">
+              <Timer v-for="timerid, index in xgroup.value.timers" :timer="oTimers[getIndexFromId(parseTimerId(timerid).timerid)]" :timerid="timerid" :timeractive="group.current.group && group.current.group.id === xgroup.value.id && index === group.activetimerid.value[getIndexFromId(xgroup.value.id)]" mode="small" />
+            </template>
+          </Group>
         </div>
       </div>
     </div>

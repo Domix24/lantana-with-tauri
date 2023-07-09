@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { IGroup } from '../types/IGroup'
-import SmallTimer from './SmallTimer.vue';
 
 interface IProps {
     group: IGroup,
@@ -53,7 +52,7 @@ const sendEvent = (event: IEvents, group: IGroup) => {
         <div class="card-header">{{ group.title }}</div>
         <div class="card-body">
             <div class="list-group my-2">
-                <SmallTimer v-for="timer, index in group.timers" :timerid="timer" :active="index === activetimerid" />
+                <slot name="timers"></slot>
             </div>
             <div class="d-grid gap-2 d-md-flex flex-md-wrap">
                 <a :class="'btn btn-success' + (active === 0 ? '' : ' disabled')" @click="sendEvent('start', group)" v-if="showStartButton">Start</a>
