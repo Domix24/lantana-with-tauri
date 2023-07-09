@@ -24,18 +24,6 @@ export interface ITimerIncrement {
   increment: number,
 }
 
-export interface ITimer {
-  active: boolean,
-  minute: number,
-  hour: number,
-  second: number,
-  title: string,
-  id: number,
-  timerIncrement: ITimerIncrement,
-  scheduled: IScheduled,
-  countdown: ICountdown
-}
-
 export interface IDexieTimer {
   active: boolean,
   minute: number,
@@ -43,6 +31,15 @@ export interface IDexieTimer {
   second: number,
   title: string,
   timerIncrement: ITimerIncrement,
+}
+
+export interface IDexieTimerWithId extends IDexieTimer {
+  id: number
+}
+
+export interface ITimer extends IDexieTimerWithId {
+  scheduled: IScheduled,
+  countdown: ICountdown
 }
 
 interface IChoice {
@@ -92,3 +89,13 @@ export const createTimer: (active: boolean, hour: number, id: number, minute: nu
 export const createEmptyTimer: () => ITimer = () => _hiddenCreateTimer(false, 0, 0, 0, 0, { active: false, increment: 0 }, "Empty").Timer
 
 export const createEmptyDexieTimer: () => IDexieTimer = () => _hiddenCreateTimer(false, 0, 0, 0, 0, { active: false, increment: 0 }, "Empty").DexieTimer
+
+export const timerToDB: (timer: ITimer) => IDexieTimerWithId = timer => ({
+  active: timer.active,
+  hour: timer.hour,
+  id: timer.id,
+  minute: timer.minute,
+  second: timer.second,
+  timerIncrement: timer.timerIncrement,
+  title: timer.title,
+})

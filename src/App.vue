@@ -2,7 +2,7 @@
 import { Ref, onMounted, ref, computed, watch, ComputedRef } from 'vue';
 import Timer from './components/Timer.vue'
 import CreateTimer from './components/CreateTimer.vue'
-import { IDexieTimer, ITimer, createEmptyDexieTimer, createTimer } from './types/ITimer'
+import { IDexieTimer, ITimer, createEmptyDexieTimer, createTimer, timerToDB } from './types/ITimer'
 import { Modal } from 'bootstrap'
 import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
@@ -182,7 +182,7 @@ const handleTimerDeleted = (timer: ITimer) => {
 const handleModalClosed = (type: string) => {
   if (type === "timer") {
     oShowTimer[editIndex.value].value = true
-    timerDatabase.timers.put(oTimers[editIndex.value])
+    timerDatabase.timers.put(timerToDB(oTimers[editIndex.value])).then(console.log, console.warn).catch(console.error)
     editIndex.value = -1
     group.visible.value = true
   } else if (type === "group") {
