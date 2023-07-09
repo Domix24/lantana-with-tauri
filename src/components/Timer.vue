@@ -242,7 +242,6 @@ watch(() => littleTest.timerStatus, (value) => {
     <a :class="'list-group-item' + (timeractive ? ' active': '')" v-if="mode === 'small'">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{timer!.title}}</h5>
-            <div>{{timerid}}</div>
         </div>
         <div class="d-flex justify-content-between align-items-center">
             <div class="custom-font fs-3">{{show(countdown.elapsed)}}</div>
