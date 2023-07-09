@@ -1,3 +1,24 @@
+export interface IDisplay {
+  hours: number,
+  minutes: number,
+  seconds: number
+}
+
+export interface IUpdateFunction {
+  (newTime: number, display: IDisplay): void
+}
+
+export interface IScheduled {
+  start: Date,
+  end: Date,
+  update: IUpdateFunction,
+}
+
+export interface ICountdown {
+  elapsed: number,
+  active: boolean
+}
+
 export interface ITimerIncrement {
   active: boolean,
   increment: number,
@@ -11,6 +32,8 @@ export interface ITimer {
   title: string,
   id: number,
   timerIncrement: ITimerIncrement,
+  scheduled: IScheduled,
+  countdown: ICountdown
 }
 
 export interface IDexieTimer {
@@ -22,39 +45,50 @@ export interface IDexieTimer {
   timerIncrement: ITimerIncrement,
 }
 
-const _hiddenCreateTimer: (id: number, hour: number, minute: number, second: number, title: string, isDexie: boolean, active?: boolean, timerIncrement?: number) => IDexieTimer | ITimer = (id, hour, minute, second, title, isDexie, active, timerIncrement) => {
-  interface IScoped {
-    active: boolean,
-    minute: number,
-    hour: number,
-    second: number,
-    title: string,
-    id?: number
-    timerIncrement: ITimerIncrement,
+interface IChoice {
+  DexieTimer: IDexieTimer,
+  Timer: ITimer
+} 
+
+const _hiddenCreateTimer: (active: boolean, hour: number, id: number, minute: number, second: number, timerIncrement: ITimerIncrement, title: string) => IChoice = (active, hour, id, minute, second, timerIncrement, title) => ({
+  DexieTimer: {
+    active,
+    hour,
+    minute,
+    second,
+    timerIncrement,
+    title
+  },
+  Timer: {
+    active,
+    countdown: {
+      active,
+      elapsed: hour * 3600 + minute * 60 + second
+    },
+    hour,
+    id,
+    minute,
+    scheduled: {
+      end: new Date(),
+      start: new Date(),
+      update: function(newTime, display) {
+        this.end.setTime(newTime)
+
+        this.end.setHours(this.end.getHours() + display.hours)
+        this.end.setMinutes(this.end.getMinutes() + display.minutes)
+        this.end.setSeconds(this.end.getSeconds() + display.seconds)
+
+        this.start = new Date(newTime)
+      }
+    },
+    second,
+    timerIncrement,
+    title
   }  
-  
-  let returnObj: IScoped = {
-    active: active === undefined ? false : active,
-    hour: hour,
-    minute: minute,
-    second: second,
-    title: title,
-    timerIncrement: {
-      active: !(timerIncrement === undefined),
-      increment: timerIncrement === undefined ? 0 : timerIncrement
-    }
-  }
-  
-  if (isDexie) {
-    return returnObj as IDexieTimer
-  } else {
-    returnObj.id = id
-    return returnObj as ITimer
-  }
-}
+})
 
-export const createTimer: (id: number, hour: number, minute: number, second: number, title: string, active?: boolean, timerIncrement?: number) => ITimer = (id, hour, minute, second, title, active, timerIncrement) => _hiddenCreateTimer(id, hour, minute, second, title, false, active, timerIncrement) as ITimer
+export const createTimer: (active: boolean, hour: number, id: number, minute: number, second: number, timerIncrement: ITimerIncrement, title: string) => IChoice = (active, hour, id, minute, second, timerIncrement, title) => _hiddenCreateTimer(active, hour, id, minute, second, timerIncrement, title)
 
-export const createEmptyTimer: () => ITimer = () => _hiddenCreateTimer(0, 0, 0, 0, "Empty", false) as ITimer
+export const createEmptyTimer: () => ITimer = () => _hiddenCreateTimer(false, 0, 0, 0, 0, { active: false, increment: 0 }, "Empty").Timer
 
-export const createEmptyDexieTimer: () => IDexieTimer = () => _hiddenCreateTimer(0, 0, 0, 0, "Empty", true) as IDexieTimer
+export const createEmptyDexieTimer: () => IDexieTimer = () => _hiddenCreateTimer(false, 0, 0, 0, 0, { active: false, increment: 0 }, "Empty").DexieTimer
