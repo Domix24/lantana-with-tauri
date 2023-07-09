@@ -5,7 +5,7 @@ import { timerDatabase } from '../database';
 import { ITimer, ITimerIncrement } from '../types/ITimer'
 import { IGroup } from '../types/IGroup';
 
-type IReset = "Original" | "Normal" | "Progressive" | "Only"
+type IReset = "Origin" | "Normal" | "Progressive" | "Only"
 
 interface ITimerOption {
   timer: ITimer,
@@ -42,14 +42,14 @@ const appendReset: (reset: IReset) => { label: (increment: ITimerIncrement) => s
   label: increment => {
     if (reset === "Normal") return " - back to last"
     else if (reset === "Only") return ""
-    else if (reset === "Original") return ""
-    else return ` - +${increment.increment}%`
+    else if (reset === "Origin") return ""
+    else /* if (reset === "Progressive") */ return ` - +${increment.increment}%`
   },
   value: (() => {
     if (reset === "Normal") return "!"
     else if (reset === "Only") return ""
-    else if (reset === "Original") return ""
-    else return "+"
+    else if (reset === "Origin") return "*"
+    else /* if (reset === "Progressive") */ return "+"
   })()
 })
 
@@ -115,11 +115,11 @@ onMounted(() => {
 
     timerDatabase.timers.orderBy("id").each(timer => {
       if (timer.timerIncrement.active) {
-        timers.value.push({ timer: timer as ITimer, reset: "Original" })
-        timers.value.push({ timer: timer as ITimer, reset: "Normal" })
-        timers.value.push({ timer: timer as ITimer, reset: "Progressive" })
+        timers.value.push({ timer: timer as ITimer, reset: "Origin" }) // 1
+        timers.value.push({ timer: timer as ITimer, reset: "Normal" }) // 2
+        timers.value.push({ timer: timer as ITimer, reset: "Progressive" }) // 3
       } else {
-        timers.value.push({ timer: timer as ITimer, reset: "Only" })  
+        timers.value.push({ timer: timer as ITimer, reset: "Only" }) // 1
       } 
     })
 })
