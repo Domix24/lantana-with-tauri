@@ -29,6 +29,7 @@ const littleTest = withDefaults(defineProps<{ timer?: ITimer, disabled?: boolean
 })
 const scheduled = ref(littleTest.timer!.scheduled)
 const countdown = ref(littleTest.timer!.countdown)
+const theTimer = ref(littleTest.timer!)
 
 const emits = defineEmits<{(event: 'timerStarted', timer: ITimer): void, (event: 'timerStopped', timer: ITimer, finished: boolean): void, (event: 'timerEditStarted', timer: ITimer): void, (event: 'timerDeleted', timer: ITimer): void}>()
 
@@ -40,7 +41,6 @@ const coutdowntotimer: (x: number) => IDisplay = (x) => ({ hours: Math.floor(x /
 const theDropdown = ref()
 
 const originElapsed: number = countdown.value.elapsed
-let updatedElapsed = ref(originElapsed)
 
 const startTimer = function () {
     const baseDate = Date.now()
@@ -89,22 +89,22 @@ const _resetTimer = function (func: ICountdownElapsedFunction) {
 
 const resetTimerOriginal = function () {
     _resetTimer(() => {
-        updatedElapsed.value = originElapsed
+        theTimer.value.updatedElapsed = originElapsed
 
-        return updatedElapsed.value
+        return theTimer.value.updatedElapsed
     })
 }
 
 const resetTimerIncrement = function () {
     _resetTimer(() => {
-        updatedElapsed.value = Math.ceil(Math.ceil(updatedElapsed.value * ((littleTest.timer!.timerIncrement.increment + 100) / 100)) / 10) * 10
+        theTimer.value.updatedElapsed = Math.ceil(Math.ceil(theTimer.value.updatedElapsed * ((littleTest.timer!.timerIncrement.increment + 100) / 100)) / 10) * 10
 
-        return updatedElapsed.value
+        return theTimer.value.updatedElapsed
     })
 }
 
 const resetTimerBack = function () {
-    _resetTimer(() => updatedElapsed.value)
+    _resetTimer(() => theTimer.value.updatedElapsed)
 }
 
 const cardBorder = computed(() => {
@@ -128,7 +128,7 @@ const showStartButton = computed(() => {
 })
 
 const resetButtonText = computed(() => {
-    if (littleTest.timer!.timerIncrement.active) return Math.ceil(Math.ceil(updatedElapsed.value * ((littleTest.timer!.timerIncrement.increment + 100) / 100)) / 10) * 10
+    if (littleTest.timer!.timerIncrement.active) return Math.ceil(Math.ceil(theTimer.value.updatedElapsed * ((littleTest.timer!.timerIncrement.increment + 100) / 100)) / 10) * 10
     else return 0
 })
 
@@ -148,7 +148,7 @@ const showResetDropdown = computed(() => {
 })
 
 const showUpdatedReset = computed(() => {
-    if (updatedElapsed.value === originElapsed) return false
+    if (theTimer.value.updatedElapsed === originElapsed) return false
     else return true
 })
 
@@ -165,10 +165,15 @@ const showDeleteButton = computed(() => {
 const resetText = computed(() => {
     const parsedId = parseTimerId(littleTest.timerid)
 
-    if (parsedId.resetNormal) return `Reset <em>to ${show(originElapsed)}</em>`
-    else if (parsedId.resetOnly) return ``
-    else if (parsedId.resetOrigin) return `Reset <em>to ${show(updatedElapsed.value)}</em>`
-    else /* if (parsedId.resetProgressive) */ return `Reset <em>to ${show(resetButtonText.value)}</em>`
+    let returnText = ""
+    const textFormat = "Reset <em>to $0</em>"
+    
+    if (parsedId.resetNormal) returnText = textFormat.replace("$0", show(theTimer.value.updatedElapsed))
+    else if (parsedId.resetOnly) {} 
+    else if (parsedId.resetOrigin) returnText = textFormat.replace("$0", show(originElapsed))
+    else /* if (parsedId.resetProgressive) */ returnText = textFormat.replace("$0", show(resetButtonText.value))
+
+    return returnText
 })
 
 watch(showResetDropdown, (val) => {
@@ -226,7 +231,7 @@ watch(() => littleTest.timerStatus, (value) => {
                 <button :class="'btn btn-primary dropdown-toggle' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" type="button" data-bs-toggle="dropdown" aria-expanded="false" v-if="showResetDropdownButton">Reset</button>
                 <ul class="dropdown-menu" ref="theDropdown">
                     <li><a class="dropdown-item" v-on:click="resetTimerOriginal">To {{show(originElapsed)}}</a></li>
-                    <li><a class="dropdown-item" v-on:click="resetTimerBack" v-if="showUpdatedReset">To {{show(updatedElapsed)}}</a></li>
+                    <li><a class="dropdown-item" v-on:click="resetTimerBack" v-if="showUpdatedReset">To {{show(theTimer.updatedElapsed)}}</a></li>
                     <li><a class="dropdown-item" v-on:click="resetTimerIncrement">To {{show(resetButtonText)}}</a></li>
                 </ul>
                 <a :class="'btn btn-warning' + ((appendDisabled.length === 0 && activateButton) ? '' : ' disabled')" v-on:click="editTimer" v-if="showEditButton">Edit</a>

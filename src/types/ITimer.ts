@@ -39,7 +39,8 @@ export interface IDexieTimerWithId extends IDexieTimer {
 
 export interface ITimer extends IDexieTimerWithId {
   scheduled: IScheduled,
-  countdown: ICountdown
+  countdown: ICountdown,
+  updatedElapsed: number
 }
 
 interface IChoice {
@@ -80,7 +81,8 @@ const _hiddenCreateTimer: (active: boolean, hour: number, id: number, minute: nu
     },
     second,
     timerIncrement,
-    title
+    title,
+    updatedElapsed: hour * 3600 + minute * 60 + second
   }  
 })
 
