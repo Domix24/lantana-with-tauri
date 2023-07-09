@@ -181,10 +181,38 @@ const handleTimerDeleted = (timer: ITimer) => {
 
 const handleModalClosed = (type: string) => {
   if (type === "timer") {
+    const theTimer = oTimers[editIndex.value]
+    const functions = {
+      type1: {
+        a: (y: {timerid: number, resetOnly: boolean}) => y.resetOnly && y.timerid == theTimer.id,
+        b: (y: string) => parseTimerId(y).timerid === theTimer.id && parseTimerId(y).resetOnly ? y + "*" : y
+      },
+      type2: {
+        a: (y: {timerid: number, resetOnly: boolean}) => !y.resetOnly && y.timerid == theTimer.id,
+        b: (y: string) => parseTimerId(y).timerid === theTimer.id && !parseTimerId(y).resetOnly ? parseTimerId(y).timerid + "" : y
+      }
+    }
+    let correctFunction = functions.type2
+
     oShowTimer[editIndex.value].value = true
-    timerDatabase.timers.put(timerToDB(oTimers[editIndex.value])).then(console.log, console.warn).catch(console.error)
-    editIndex.value = -1
-    group.visible.value = true
+    timerDatabase.timers.put(timerToDB(oTimers[editIndex.value]))
+    if (oTimers[editIndex.value].timerIncrement.active) {
+      correctFunction = functions.type1
+    }
+    groupDatabase.groups.toArray().then(dexieGroups => {
+      groupDatabase.groups.bulkPut(dexieGroups.filter(x => x.timers .map(y => parseTimerId(y))
+                                                                    .filter(correctFunction.a)
+                                                                    .length > 0)
+                                              .map(x => {
+                                                x.timers = x.timers.map(correctFunction.b)
+                                                return x
+                          }))
+                          .then(_ => {
+                            editIndex.value = -1
+                            group.reloadTable()
+                            group.visible.value = true
+                          })
+    }) 
   } else if (type === "group") {
     groupDatabase.groups.put(group.anotherlist[group.index.value])
     group.index.value = -1
