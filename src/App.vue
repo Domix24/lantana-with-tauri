@@ -72,6 +72,7 @@ const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
 const timerAction: Ref<number[]> = ref([])
 const activateButton: Ref<boolean> = ref(true)
+const notificationActivated: Ref<boolean> = ref(true)
 
 //====================
 
@@ -444,7 +445,12 @@ onMounted(() => {
   <main>
     <div class="px-4 py-5">
       <div class="gap-2 justify-content-end d-flex">
-        <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Notification</button>
+        <template v-if="notificationActivated">
+          <button type="button" class="btn btn-danger btn-lg px-4 gap-3" @click="notificationActivated = false"><i class="bi bi-bell-slash-fill"></i></button>
+        </template>
+        <template v-else>
+          <button type="button" class="btn btn-success btn-lg px-4 gap-3" @click="notificationActivated = true"><i class="bi bi-bell-fill"></i></button>
+        </template>
       </div>
     </div>
     <div class="px-4 py-5 my-5 text-center">
