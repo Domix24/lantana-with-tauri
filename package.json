@@ -1,7 +1,7 @@
 {
   "name": "lantana",
   "private": true,
-  "version": "1.1.4+prepare",
+  "version": "1.1.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@popperjs/core": "^2.11.7",
     "bootstrap": "^5.3.0-alpha3",
+    "bootstrap-icons": "^1.10.5",
     "dexie": "^3.2.4",
     "vue": "^3.2.47"
   },
