@@ -442,6 +442,11 @@ onMounted(() => {
 
 <template>
   <main>
+    <div class="px-4 py-5">
+      <div class="gap-2 justify-content-end d-flex">
+        <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Notification</button>
+      </div>
+    </div>
     <div class="px-4 py-5 my-5 text-center">
       <img class="d-block mx-auto mb-4" src="/logo.svg" width="72" height="74">
       <h1 class="display-5 fw-bold text-body-emphasis">Lantana 🌼</h1>
