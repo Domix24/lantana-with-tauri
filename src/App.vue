@@ -446,10 +446,10 @@ onMounted(() => {
     <div class="px-4 py-5">
       <div class="gap-2 justify-content-end d-flex">
         <template v-if="notificationActivated">
-          <button type="button" class="btn btn-danger btn-lg px-4 gap-3" @click="notificationActivated = false"><i class="bi bi-bell-slash-fill"></i></button>
+          <button type="button" class="btn btn-danger btn-lg px-4 gap-3" @click="notificationActivated = false" title="Deactivate"><i class="bi bi-bell-slash-fill"></i></button>
         </template>
         <template v-else>
-          <button type="button" class="btn btn-success btn-lg px-4 gap-3" @click="notificationActivated = true"><i class="bi bi-bell-fill"></i></button>
+          <button type="button" class="btn btn-success btn-lg px-4 gap-3" @click="notificationActivated = true" title="Activate"><i class="bi bi-bell-fill"></i></button>
         </template>
       </div>
     </div>
