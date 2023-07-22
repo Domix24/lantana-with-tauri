@@ -8,7 +8,7 @@ import { groupDatabase, timerDatabase } from './database'
 import CreateGroup from './components/CreateGroup.vue'
 import { IGroup, createEmptyDexieGroup } from './types/IGroup';
 import Group from './components/Group.vue'
-import { parseTimerId } from './functions';
+import { notificationActivated, notificationDisabled, parseTimerId, requestPermission, showNotification, toggleNotification } from './functions';
 
 //====================
 
@@ -72,7 +72,6 @@ const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
 const timerAction: Ref<number[]> = ref([])
 const activateButton: Ref<boolean> = ref(true)
-const notificationActivated: Ref<boolean> = ref(true)
 
 //====================
 
@@ -147,6 +146,12 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
     modalContent.value.innerHTML = document.getElementById(oIds[getIndexFromId(timer.id)])?.outerHTML + ""
     modalContent.value.firstElementChild?.classList.remove("d-none")
     modalWindowObject.show()
+
+    let notificationBody = "Timer: " + timer.title
+    if (group.current.group)
+      notificationBody = "Timer: " + timer.title + ", Group: " + group.current.group.title
+    
+    showNotification("Timer Finished", notificationBody)
 
     interval = setInterval(() => {
       if (elapsed % 2 === 0) {
@@ -443,14 +448,10 @@ onMounted(() => {
 
 <template>
   <main>
-    <div class="px-4 py-5">
+    <div class="px-4 py-5" v-if="!notificationDisabled">
       <div class="gap-2 justify-content-end d-flex">
-        <template v-if="notificationActivated">
-          <button type="button" class="btn btn-danger btn-lg px-4 gap-3" @click="notificationActivated = false" title="Deactivate"><i class="bi bi-bell-slash-fill"></i></button>
-        </template>
-        <template v-else>
-          <button type="button" class="btn btn-success btn-lg px-4 gap-3" @click="notificationActivated = true" title="Activate"><i class="bi bi-bell-fill"></i></button>
-        </template>
+        <button v-if="!notificationDisabled && notificationActivated" type="button" class="btn btn-danger btn-lg px-4 gap-3" @click="toggleNotification()" title="Deactivate"><i class="bi bi-bell-slash-fill"></i></button>
+        <button v-else-if="!notificationDisabled" type="button" class="btn btn-success btn-lg px-4 gap-3" @click="requestPermission()" title="Activate"><i class="bi bi-bell-fill"></i></button>
       </div>
     </div>
     <div class="px-4 py-5 my-5 text-center">
