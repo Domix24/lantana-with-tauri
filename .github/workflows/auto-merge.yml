@@ -10,15 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2
-        with:
-          target: patch
-          github-token: ${{ secrets.dependabot }}
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2
+      - uses: fastify/github-action-merge-dependabot@v3.0.0
         with:
           target: minor
-          github-token: ${{ secrets.dependabot }}
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2
-        with:
-          target: major
-          github-token: ${{ secrets.dependabot }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
