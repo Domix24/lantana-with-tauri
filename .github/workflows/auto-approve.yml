@@ -3,6 +3,8 @@ name: Auto approve PRs by dependabot
 # Trigger the workflow on pull request
 on: pull_request_target
 
+permissions: write-all
+
 jobs:
   autoapprove:
     name: Auto-Approve a PR by dependabot
