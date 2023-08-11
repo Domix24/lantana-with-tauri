@@ -13,12 +13,12 @@ jobs:
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: patch
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.dependabot }}
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: minor
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.dependabot }}
       - uses: ahmadnassri/action-dependabot-auto-merge@v2
         with:
           target: major
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.dependabot }}
