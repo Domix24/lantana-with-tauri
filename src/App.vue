@@ -60,10 +60,10 @@ let oTimerDisabledA: Ref<boolean>[] = []
 let oShowTimer: Ref<boolean>[] = []
 let oIndexes: Ref<number[]> = ref([])
 let oIds: string[] = []
-let interval: NodeJS.Timer
+let interval: NodeJS.Timeout
 let modalWindowObject: Modal
 let oTimerDeleted: Ref<boolean[]> = ref([])
-let titleInterval: NodeJS.Timer
+let titleInterval: NodeJS.Timeout
 let group: IGroupObject
 const modalWindow: Ref<Element> = ref({} as Element)
 const modalContent: Ref<Element> = ref({} as Element)

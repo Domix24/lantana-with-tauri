@@ -1,0 +1,14 @@
+name: auto-merge
+
+on:
+  pull_request:
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: fastify/github-action-merge-dependabot@main
+        with:
+          target: any
+          github-token: ${{ secrets.GITHUB_TOKEN }}
