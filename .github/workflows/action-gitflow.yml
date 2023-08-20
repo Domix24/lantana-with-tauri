@@ -1,0 +1,25 @@
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+name: Release Workflows
+
+jobs:
+  release_worfkflow:
+    name: Release Workflow
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        uses: domix24/action-gitflow@v0
+        with:
+          dev_branch: 'develop'
+          main_branch: 'main'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
