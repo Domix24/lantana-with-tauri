@@ -151,7 +151,9 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
     if (group.current.group)
       notificationBody = "Timer: " + timer.title + ", Group: " + group.current.group.title
     
-    showNotification("Timer Finished", notificationBody)
+    showNotification("Timer Finished", notificationBody, () => {
+      modalWindowObject.hide()
+    })
 
     interval = setInterval(() => {
       if (elapsed % 2 === 0) {
