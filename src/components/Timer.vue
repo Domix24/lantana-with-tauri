@@ -243,6 +243,9 @@ watch(() => littleTest.timerStatus, (value) => {
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{timer!.title}}</h5>
         </div>
+        <div class="d-flex w-100 justify-content-between" v-if="timeractive">
+            <h5 class="text-muted mb-1" style="font-size: 0.8rem">{{format(scheduled.end)}}</h5>
+        </div>
         <div class="d-flex justify-content-between align-items-center">
             <div class="custom-font fs-3">{{show(countdown.elapsed)}}</div>
             <div class="fs-6" v-html="resetText"></div>
