@@ -3,9 +3,14 @@ import { Ref, ref } from 'vue'
 export const notificationActivated: Ref<boolean> = ref(Notification.permission === "granted")
 export const notificationDisabled: Ref<boolean> = ref(Notification.permission === "denied")
 
-export const showNotification = (title: string, body: string) => {
+interface IVoidFunction {
+    (): void
+}
+
+export const showNotification = (title: string, body: string, fn: IVoidFunction) => {
     if (!notificationDisabled.value && notificationActivated.value) {
-        new Notification(title, { body: body })
+        const theNotif = new Notification(title, { body: body })
+        theNotif.onclick = _e => { fn() }
     }
 }
 
