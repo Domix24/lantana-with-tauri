@@ -5,7 +5,11 @@ export const notificationDisabled: Ref<boolean> = ref(Notification.permission ==
 
 export const showNotification = (title: string, body: string) => {
     if (!notificationDisabled.value && notificationActivated.value) {
-        new Notification(title, { body: body })
+        const theNotif = new Notification(title, { body: body })
+        theNotif.onclick = (event) => {
+            console.log("clicked")
+            console.log(event)
+        };
     }
 }
 
