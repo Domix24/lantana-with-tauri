@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/bootstrap": "^5.2.6",
     "@types/node": "^20.5.7",
-    "@vitejs/plugin-vue": "^4.3.3",
+    "@vitejs/plugin-vue": "^4.3.4",
     "sass": "^1.66.1",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
