@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.10",
-    "@types/node": "^20.11.7",
+    "@types/node": "^20.11.10",
     "@vitejs/plugin-vue": "^5.0.3",
     "sass": "^1.70.0",
     "typescript": "^5.3.3",
