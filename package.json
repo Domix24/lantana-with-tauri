@@ -13,7 +13,7 @@
     "@popperjs/core": "^2.11.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "dexie": "^4.0.4",
+    "dexie": "^4.0.7",
     "vue": "^3.4.27"
   },
   "devDependencies": {
