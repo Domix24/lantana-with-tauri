@@ -9,6 +9,7 @@ import CreateGroup from './components/CreateGroup.vue'
 import { IGroup, createEmptyDexieGroup } from './types/IGroup';
 import Group from './components/Group.vue'
 import { notificationActivated, notificationDisabled, parseTimerId, requestPermission, showNotification, toggleNotification } from './functions';
+import { invoke } from '@tauri-apps/api'
 
 //====================
 
@@ -72,6 +73,7 @@ const valueTrue: boolean = true
 const firstInit: Ref<boolean> = ref(false)
 const timerAction: Ref<number[]> = ref([])
 const activateButton: Ref<boolean> = ref(true)
+const brewing: Ref<string> = ref("")
 
 //====================
 
@@ -228,6 +230,14 @@ const handleModalClosed = (type: string) => {
 }
 
 const handleCreateTimer = () => {
+  invoke("cake").then(x => {
+    if (typeof x === "string") {
+      brewing.value = x
+    } else if (typeof x === "number") {
+      brewing.value = x.toString()
+    }
+  }).catch(() => { brewing.value = "error" })
+  return
   let newTimer = createEmptyDexieTimer()
 
   timerDatabase.timers.add(newTimer).then((_x: number) => {
@@ -458,7 +468,7 @@ onMounted(() => {
     </div>
     <div class="px-4 py-5 my-5 text-center">
       <img class="d-block mx-auto mb-4" src="/logo.svg" width="72" height="74">
-      <h1 class="display-5 fw-bold text-body-emphasis">Lantana 🌼</h1>
+      <h1 class="display-5 fw-bold text-body-emphasis">Lantana 🌼 <span id="brew">{{ brewing }}</span></h1>
       <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">List of <em>Timers</em></p>
         <div class="gap-2 justify-content-sm-center d-grid d-sm-flex">

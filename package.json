@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.7",
+    "@tauri-apps/api": "^1.6.0",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "dexie": "^4.0.7",
     "vue": "^3.4.31"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^20.14.9",
     "@vitejs/plugin-vue": "^5.0.5",
