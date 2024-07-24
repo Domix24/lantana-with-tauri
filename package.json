@@ -21,7 +21,7 @@
     "@tauri-apps/cli": "^1.6.0",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^20.14.11",
-    "@vitejs/plugin-vue": "^5.0.5",
+    "@vitejs/plugin-vue": "^5.1.0",
     "sass": "^1.77.8",
     "typescript": "^5.5.4",
     "vite": "^5.3.4",
