@@ -17,14 +17,12 @@ async fn open_powershell() -> i8 {
     let mut got_data = false;
     while let Some(event) = receiver.recv().await {
       if let tauri::api::process::CommandEvent::Stdout(line) = event {
-        println!("{}",line);
         got_data = true;
         if line.starts_with("quit") {
           let _ = child.kill();
           break;
         }
       } else if let tauri::api::process::CommandEvent::Stderr(line) = event {
-          println!("{}",line);
           got_stderr = true;
       }
     }
