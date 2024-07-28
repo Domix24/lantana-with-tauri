@@ -40,7 +40,7 @@ async fn openPowershell() -> i8 {
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![cake])
+    .invoke_handler(tauri::generate_handler![openPowershell])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
