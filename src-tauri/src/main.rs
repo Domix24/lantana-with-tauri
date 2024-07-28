@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[tauri::command(async)]
-async fn cake() -> i8 {
+async fn openPowershell() -> i8 {
   let command = tauri::api::process::Command::new("PowerShell")
     .args(["-ExecutionPolicy", "Bypass"])
     .args(["-File", "script.ps1"])
