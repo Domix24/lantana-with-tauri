@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "lantana",
-    "version": "1.2.1"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -38,7 +38,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": ["script.ps1"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
@@ -51,7 +51,10 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDRkE0N0Q4NTExMEI3RDYKUldUV3R4QlIyRWY2YlBwdHFUMDd0N2FzSUVTbG1QSmpLZXppZTR1NVJ5aUZmTStyU0tmMTRud1kK",
+      "endpoints": ["https://github.com/Domix24/lantana-with-tauri/release/latest/download/latest.json"]
     },
     "windows": [
       {
