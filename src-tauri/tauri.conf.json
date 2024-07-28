@@ -53,7 +53,7 @@
     "updater": {
       "active": true,
       "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDRkE0N0Q4NTExMEI3RDYKUldUV3R4QlIyRWY2YlBwdHFUMDd0N2FzSUVTbG1QSmpLZXppZTR1NVJ5aUZmTStyU0tmMTRud1kK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDg5MDk1QzgzMjI4OUU0NDEKUldSQjVJa2lnMXdKaWRWUnc3WmdtWEhkUy8rYkRiU25Sd2VsMlJOaUVyWThVcDB2ZmtmalRJd0YK",
       "endpoints": ["https://github.com/Domix24/lantana-with-tauri/release/latest/download/latest.json"]
     },
     "windows": [

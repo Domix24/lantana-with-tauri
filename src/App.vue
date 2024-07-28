@@ -156,8 +156,8 @@ const handleTimerStopped = (timer: ITimer, finished: boolean) => {
       modalWindowObject.hide()
     })
 
-    invoke("openPowershell").then(value => {
-      if (value == "close") {
+    invoke("open_powershell").then(value => {
+      if (value === 0) {
         modalWindowObject.hide()
       }
     }).catch(() => {})
