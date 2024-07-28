@@ -46,7 +46,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               previous_tag_name: "${{ steps.get-latest-release.outputs.tag_name }}",
-              tag_name: "${{ steps.get-version-from-branch-name.outputs.version }}"
+              tag_name: "v${{ steps.get-version-from-branch-name.outputs.version }}"
             })
             const {data: newReleaseData} = await github.rest.repos.createRelease({
               owner: context.repo.owner,
