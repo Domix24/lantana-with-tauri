@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[tauri::command(async)]
-async fn openPowershell() -> i8 {
+async fn open_powershell() -> i8 {
   let command = tauri::api::process::Command::new("PowerShell")
     .args(["-ExecutionPolicy", "Bypass"])
     .args(["-File", "script.ps1"])
@@ -40,7 +40,7 @@ async fn openPowershell() -> i8 {
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![openPowershell])
+    .invoke_handler(tauri::generate_handler![open_powershell])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
