@@ -18,8 +18,19 @@ jobs:
     outputs:
       id: ${{ steps.generate-release.outputs.id || steps.get-latest-release.outputs.id }}
       tag_name: ${{ steps.generate-release.outputs.tag_name || steps.get-latest-release.outputs.tag_name }}
-    steps:      
+    steps:
+      - id: get-latest-release-count
+        name: Get latest release count
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {data: releases} = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            core.setOutput("no_release", releases.filter(release => !release.prerelease).length == 0 ? "-" : null)
       - id: get-latest-release
+        if: steps.get-latest-release-count.outputs.no_release
         name: Get latest release
         uses: actions/github-script@v7
         with:
