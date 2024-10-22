@@ -15,7 +15,7 @@
     "@tauri-apps/api": "^2.0.3",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
-    "dexie": "^4.0.8",
+    "dexie": "^4.0.9",
     "vue": "^3.5.12"
   },
   "devDependencies": {
