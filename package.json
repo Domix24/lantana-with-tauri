@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2",
-    "@types/bootstrap": "^5.2.10",
+    "@types/bootstrap": "^5.2.11",
     "@types/node": "^25.9.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "sass": "^1.100.0",
