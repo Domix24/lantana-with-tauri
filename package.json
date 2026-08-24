@@ -23,7 +23,7 @@
     "@types/bootstrap": "^5.2.11",
     "@types/node": "^26.2.0",
     "@vitejs/plugin-vue": "^6.0.8",
-    "sass": "^1.102.0",
+    "sass": "^1.103.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vue-tsc": "^3.3.10"
